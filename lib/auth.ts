@@ -8,7 +8,7 @@ export const auth = betterAuth({
   database: drizzleAdapter(sqlConn, {
     provider: "pg",
     schema: {
-      user: schema.users,
+      user: schema.user,
       session: schema.session,
       account: schema.account,
       verification: schema.verification,
@@ -24,8 +24,8 @@ export const auth = betterAuth({
       create: {
         async before(user) {
           const existingUsers = await sqlConn
-            .select({ id: schema.users.id })
-            .from(schema.users)
+            .select({ id: schema.user.id })
+            .from(schema.user)
             .limit(1)
           const isFirstUser = existingUsers.length === 0
 

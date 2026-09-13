@@ -1,5 +1,6 @@
-import { cn } from "cn"
+"use client"
 
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -15,11 +16,92 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "@/components/ui/toast"
+import { authClient } from "@/lib/auth-client"
+import { z } from "zod"
+import { passwordSchema } from "@/lib/schema"
+import { PasswordRequirementsHover } from "@/components/password-requirements-hover"
+
+const SignupFormSchema = z
+  .object({
+    name: z.string().min(1, { message: "Name is required" }).trim(),
+    email: z.string().email({ message: "Invalid email address" }).trim(),
+    password: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+
+type SignInFormErrors = {
+  name?: string[]
+  email?: string[]
+  password?: string[]
+  confirmPassword?: string[]
+}
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter()
+  const [isPending, setIsPending] = useState(false)
+  const [errors, setErrors] = useState<SignInFormErrors>({})
+  const [message, setMessage] = useState<string | undefined>()
+
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsPending(true)
+    setErrors({})
+    setMessage(undefined)
+
+    const formData = new FormData(e.currentTarget)
+    const raw = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
+      confirmPassword: formData.get("confirmPassword") as string,
+    }
+
+    const validated = SignupFormSchema.safeParse(raw)
+    if (!validated.success) {
+      setErrors(validated.error.flatten().fieldErrors)
+      setIsPending(false)
+      return
+    }
+
+    const { name, email, password } = validated.data
+
+    const { error } = await authClient.signUp.email({
+      name,
+      email,
+      password,
+    })
+
+    console.log("signup error:", error)
+
+    if (error) {
+      if (error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
+        setMessage("An account with this email already exists.")
+      } else {
+        setMessage("Failed to create account.")
+        console.log("signup error:", error)
+      }
+      setIsPending(false)
+      return
+    }
+
+    toast.add({
+      title: "Account created successfully!",
+      type: "success",
+    })
+    router.push("/login")
+  }
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -30,42 +112,86 @@ export function SignupForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="name">Full Name</FieldLabel>
-                <Input id="name" type="text" placeholder="John Doe" required />
+                <FieldLabel htmlFor="name">Name</FieldLabel>
+                <Input
+                  id="name"
+                  type="text"
+                  name="name"
+                  placeholder="John Doe"
+                  required
+                />
+                {errors.name?.map((error) => (
+                  <p className="text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
                   type="email"
+                  name="email"
                   placeholder="m@example.com"
                   required
                 />
+                {errors.email?.map((error) => (
+                  <p className="text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
               </Field>
               <Field>
                 <Field className="grid grid-cols-2 gap-4">
                   <Field>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Input id="password" type="password" required />
+                    <FieldLabel htmlFor="password">
+                      Password <PasswordRequirementsHover />
+                    </FieldLabel>
+                    <Input
+                      id="password"
+                      type="password"
+                      name="password"
+                      required
+                    />
                   </Field>
                   <Field>
-                    <FieldLabel htmlFor="confirm-password">
+                    <FieldLabel htmlFor="confirmPassword">
                       Confirm Password
                     </FieldLabel>
-                    <Input id="confirm-password" type="password" required />
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      name="confirmPassword"
+                      required
+                    />
                   </Field>
                 </Field>
-                <FieldDescription>
-                  Must be at least 8 characters long.
-                </FieldDescription>
+                {errors.password && (
+                  <div className="text-red-500">
+                    <p>Password must:</p>
+                    <ul>
+                      {errors.password.map((error) => (
+                        <li key={error}>- {error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {errors.confirmPassword?.map((error) => (
+                  <p className="text-red-500" key={error}>
+                    {error}
+                  </p>
+                ))}
               </Field>
               <Field>
-                <Button type="submit">Create Account</Button>
+                {message && <p className="text-sm text-red-500">{message}</p>}
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "Creating…" : "Create Account"}
+                </Button>
                 <FieldDescription className="text-center">
-                  Already have an account? <a href="/login">Sign in</a>
+                  Already have an account? <Link href="/login">Sign in</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

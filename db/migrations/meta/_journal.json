@@ -8,6 +8,13 @@
       "when": 1789121754278,
       "tag": "0000_wild_black_panther",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789468281647,
+      "tag": "0001_remarkable_khan",
+      "breakpoints": true
     }
   ]
 }

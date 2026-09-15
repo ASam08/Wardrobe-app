@@ -117,7 +117,8 @@ export function LoginForm({
                 <Input
                   id="email"
                   type="email"
-                  placeholder="user@example.com"
+                  name="email"
+                  placeholder="m@example.com"
                   required
                 />
               </Field>

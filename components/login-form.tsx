@@ -29,7 +29,7 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div"> & { emailDisabled: boolean }) {
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const callbackUrl = searchParams.get("callbackUrl") || "/home"
   const router = useRouter()
   const [errorMessage, setErrorMessage] = useState<string | undefined>()
   const [isPending, setIsPending] = useState(false)

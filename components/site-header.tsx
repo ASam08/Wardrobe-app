@@ -8,10 +8,10 @@ import type { User } from "@/lib/auth"
 export function SiteHeader({ user }: { user: User }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
-      <div className="container flex h-14 items-center justify-between px-4">
+      <div className="@container flex h-14 items-center justify-between px-4">
         <Button
           variant="ghost"
-          render={<Link href="/" />}
+          render={<Link href="/home" />}
           nativeButton={false}
           className="px-2"
         >

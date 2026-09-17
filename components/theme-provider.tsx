@@ -47,11 +47,15 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
+      if (!event.key) {
         return
       }
 
       if (isTypingTarget(event.target)) {
+        return
+      }
+
+      if (event.key.toLowerCase() !== "d") {
         return
       }
 

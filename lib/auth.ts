@@ -4,6 +4,8 @@ import { admin } from "better-auth/plugins"
 import { sqlConn } from "@/lib/db"
 import * as schema from "@/db/schema"
 
+const approvalRequired = process.env.APPROVE_SIGNUPS?.toLowerCase() === "true"
+
 export const auth = betterAuth({
   database: drizzleAdapter(sqlConn, {
     provider: "pg",
@@ -28,10 +30,7 @@ export const auth = betterAuth({
             .from(schema.users)
             .limit(1)
           const isFirstUser = existingUsers.length === 0
-
-          const banned =
-            !isFirstUser &&
-            process.env.APPROVE_SIGNUPS?.toLowerCase() === "true"
+          const banned = !isFirstUser && approvalRequired
 
           return {
             data: {
@@ -49,10 +48,9 @@ export const auth = betterAuth({
   plugins: [
     admin({
       defaultRole: "user",
-      bannedUserMessage:
-        process.env.APPROVE_SIGNUPS === "true"
-          ? "Your account has not been approved yet. Please contact the administrator."
-          : "Your account has been banned. Please contact the administrator.",
+      bannedUserMessage: approvalRequired
+        ? "Your account has not been approved yet. Please contact the administrator."
+        : "Your account has been banned. Please contact the administrator.",
     }),
   ],
 
@@ -72,15 +70,15 @@ export const auth = betterAuth({
     database: {
       generateId: () => crypto.randomUUID(),
     },
-    useSecureCookies: process.env.APP_URL?.startsWith("https") ?? false,
+    useSecureCookies: process.env.BETTER_AUTH_URL?.startsWith("https") ?? false,
   },
 
   trustedOrigins: [
-    process.env.APP_URL ?? "http://localhost:3000",
+    process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
     ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",") ?? []),
   ],
 
-  baseURL: "http://localhost:3000",
+  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
 })
 
 export type Session = typeof auth.$Infer.Session

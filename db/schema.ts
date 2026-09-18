@@ -1,4 +1,14 @@
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core"
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  index,
+  pgEnum,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -76,3 +86,44 @@ export const verification = pgTable(
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)]
 )
+
+export const seasonEnum = pgEnum("season", [
+  "spring",
+  "summer",
+  "autumn",
+  "winter",
+])
+
+export const categories = pgTable(
+  "categories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("categories_global_name_unique")
+      .on(table.name)
+      .where(sql`${table.userId} is null`),
+    uniqueIndex("categories_user_name_unique")
+      .on(table.userId, table.name)
+      .where(sql`${table.userId} is not null`),
+  ]
+)
+
+export const items = pgTable("items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  categoryId: uuid("category_id").references(() => categories.id, {
+    onDelete: "set null",
+  }),
+  season: seasonEnum("season"),
+  color: text("color"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+})

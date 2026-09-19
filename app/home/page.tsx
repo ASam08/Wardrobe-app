@@ -1,10 +1,15 @@
-import { auth } from "@/lib/auth" // path to your Better Auth server instance
+import { auth } from "@/lib/auth"
+import { retrieveCategories } from "@/lib/data"
 import { headers } from "next/headers"
 
 export default async function HomePage() {
   const session = await auth.api.getSession({
-    headers: await headers(), // you need to pass the headers object.
+    headers: await headers(),
   })
+
+  const user = session?.user
+  const categories = await retrieveCategories(user?.id || "")
+
   return (
     <div>
       <h1>Welcome to the Home Page</h1>
@@ -13,6 +18,13 @@ export default async function HomePage() {
       ) : (
         <p>You are not logged in.</p>
       )}
+
+      <h2>Your Categories:</h2>
+      <ul>
+        {categories.map((category) => (
+          <li key={category.id}>{category.name}</li>
+        ))}
+      </ul>
     </div>
   )
 }

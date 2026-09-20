@@ -1,3 +1,6 @@
+import { CreateItemForm } from "@/components/create-item-form"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { auth } from "@/lib/auth"
 import { retrieveCategories } from "@/lib/data"
 import { headers } from "next/headers"
@@ -19,12 +22,19 @@ export default async function HomePage() {
         <p>You are not logged in.</p>
       )}
 
-      <h2>Your Categories:</h2>
+      <Dialog>
+        <DialogTrigger render={<Button>Create Item</Button>} />
+        <DialogContent>
+          <CreateItemForm />
+        </DialogContent>
+      </Dialog>
+
+      {/* <h2>Your Categories:</h2>
       <ul>
         {categories.map((category) => (
           <li key={category.id}>{category.name}</li>
         ))}
-      </ul>
+      </ul> */}
     </div>
   )
 }

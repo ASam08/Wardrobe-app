@@ -25,7 +25,7 @@ export default async function HomePage() {
       <Dialog>
         <DialogTrigger render={<Button>Create Item</Button>} />
         <DialogContent>
-          <CreateItemForm />
+          <CreateItemForm categories={categories} />
         </DialogContent>
       </Dialog>
 

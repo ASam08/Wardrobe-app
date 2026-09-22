@@ -1,3 +1,5 @@
+"use server"
+
 import { sqlConn } from "@/lib/db"
 import * as schema from "@/db/schema"
 import { eq, or, isNull } from "drizzle-orm"

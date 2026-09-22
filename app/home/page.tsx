@@ -4,14 +4,17 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { auth } from "@/lib/auth"
 import { retrieveCategories } from "@/lib/data"
 import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 
 export default async function HomePage() {
   const session = await auth.api.getSession({
     headers: await headers(),
   })
+  if (!session) {
+    redirect("/login")
+  }
 
-  const user = session?.user
-  const categories = await retrieveCategories(user?.id || "")
+  const categories = await retrieveCategories(session.user.id)
 
   return (
     <div>

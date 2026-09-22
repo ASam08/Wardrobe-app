@@ -27,12 +27,13 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox"
-import { retrieveCategories } from "@/lib/data"
+import { capitalise } from "@/lib/utils"
+import { seasonEnum } from "@/db/schema"
 
 const itemFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   categoryId: z.string().min(1, "Category is required"),
-  season: z.enum(["spring", "summer", "autumn", "winter"], {
+  season: z.enum(seasonEnum.enumValues, {
     message: "Invalid season",
   }),
   colour: z.string().min(1, "Colour is required"),
@@ -56,26 +57,13 @@ export function CreateItemForm({
     // TODO: Handle form submission, e.g., send data to the server
     console.log(data)
   }
-  const seasons = {
-    spring: "Spring",
-    summer: "Summer",
-    autumn: "Autumn",
-    winter: "Winter",
-  }
+  const seasons = seasonEnum.enumValues.map((value) => ({
+    value,
+    label: capitalise(value),
+  }))
   const seasonItems = Object.entries(seasons).map(([value, label]) => ({
     value,
     label,
-  }))
-
-  const oldCategories = categories.map((category) => ({
-    1: "Shirts",
-    2: "Pants",
-    3: "Shoes",
-    4: "Accessories",
-  }))
-  const categoryItems = Object.entries(categories).map(([id, name]) => ({
-    id,
-    name,
   }))
 
   return (
@@ -153,7 +141,7 @@ export function CreateItemForm({
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="create-item-season">Season</FieldLabel>
                 <Select
-                  items={seasonItems}
+                  items={seasons}
                   value={field.value}
                   onValueChange={field.onChange}
                   name={field.name}
@@ -162,9 +150,9 @@ export function CreateItemForm({
                     <SelectValue placeholder="Select a season" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(seasons).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>
-                        {value}
+                    {seasons.map((season) => (
+                      <SelectItem key={season.value} value={season.value}>
+                        {season.label}
                       </SelectItem>
                     ))}
                   </SelectContent>

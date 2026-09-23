@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/combobox"
 import { capitalise } from "@/lib/utils"
 import { seasonEnum } from "@/db/schema"
+import { createItem } from "@/lib/actions"
 
 const itemFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -54,7 +55,7 @@ export function CreateItemForm({
     },
   })
   function onSubmit(data: z.infer<typeof itemFormSchema>) {
-    // TODO: Handle form submission, e.g., send data to the server
+    createItem(data)
     console.log(data)
   }
   const seasons = seasonEnum.enumValues.map((value) => ({

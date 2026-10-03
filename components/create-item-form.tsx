@@ -73,7 +73,7 @@ export function CreateItemForm({
         <CardHeader>
           <CardTitle>Create Item</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Controller
             name="name"
             control={form.control}

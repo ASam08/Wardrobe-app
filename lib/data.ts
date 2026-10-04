@@ -21,3 +21,18 @@ export async function retrieveCategories(userId: string) {
     throw error
   }
 }
+
+export async function retrieveItems(userId: string) {
+  try {
+    const result = await sqlConn
+      .select()
+      .from(schema.items)
+      .where(
+        eq(schema.items.userId, userId)
+      )
+    return result
+  } catch (error) {
+    console.error("Error retrieving items:", error)
+    throw error
+  }
+}

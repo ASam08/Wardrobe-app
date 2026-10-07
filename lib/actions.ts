@@ -5,8 +5,7 @@ import * as schema from "@/db/schema"
 import { eq, or, isNull } from "drizzle-orm"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
-
-type Season = (typeof schema.seasonEnum.enumValues)[number]
+import { Season } from "@/lib/definitions"
 
 function isSeason(value: string): value is Season {
   return (schema.seasonEnum.enumValues as readonly string[]).includes(value)

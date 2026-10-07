@@ -1,4 +1,6 @@
 import { drizzle } from "drizzle-orm/node-postgres"
+import * as relations from "@/db/relations"
+import * as schema from "@/db/schema"
 
 const POSTGRES_HOST = process.env.POSTGRES_HOST ?? "db"
 const POSTGRES_PORT = process.env.POSTGRES_PORT ?? "5432"
@@ -14,4 +16,6 @@ if (!POSTGRES_USER || !POSTGRES_PASSWORD) {
 
 export const DATABASE_URL = `postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}`
 
-export const sqlConn = drizzle(DATABASE_URL)
+export const sqlConn = drizzle(DATABASE_URL, {
+  schema: { ...schema, ...relations },
+})

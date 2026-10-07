@@ -22,33 +22,14 @@ export async function retrieveCategories(userId: string) {
   }
 }
 
-export async function retrieveCategoryById(categoryId: string, userId: string) {
-  try {
-    const result = await sqlConn
-      .select()
-      .from(schema.categories)
-      .where(
-        and(
-          eq(schema.categories.id, categoryId),
-          or(
-            eq(schema.categories.userId, userId),
-            isNull(schema.categories.userId)
-          )
-        )
-      )
-    return result[0]
-  } catch (error) {
-    console.error("Error retrieving category by ID:", error)
-    throw error
-  }
-}
-
 export async function retrieveItems(userId: string) {
   try {
-    const result = await sqlConn
-      .select()
-      .from(schema.items)
-      .where(eq(schema.items.userId, userId))
+    const result = await sqlConn.query.items.findMany({
+      where: eq(schema.items.userId, userId),
+      with: {
+        category: true,
+      },
+    })
     return result
   } catch (error) {
     console.error("Error retrieving items:", error)

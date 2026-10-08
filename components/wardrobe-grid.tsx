@@ -15,8 +15,7 @@ export default function WardrobeGrid({ items }: { items: WardrobeItem[] }) {
   }
 
   return (
-    <div>
-      <h1>Wardrobe Grid</h1>
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {items.map((item) => (
         <ClothingCard item={item} key={item.id} />
       ))}

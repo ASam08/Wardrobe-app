@@ -1,6 +1,5 @@
-import { CreateItemForm } from "@/components/create-item-form"
+import { CreateItemDialog } from "@/components/create-item-dialog"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { auth } from "@/lib/auth"
 import { retrieveCategories, retrieveItems } from "@/lib/data"
 import { headers } from "next/headers"
@@ -28,12 +27,7 @@ export default async function HomePage() {
         <p>You are not logged in.</p>
       )}
 
-      <Dialog>
-        <DialogTrigger render={<Button>Create Item</Button>} />
-        <DialogContent>
-          <CreateItemForm categories={categories} />
-        </DialogContent>
-      </Dialog>
+      <CreateItemDialog categories={categories} />
 
       <WardrobeGrid items={retrievedItems} />
     </div>

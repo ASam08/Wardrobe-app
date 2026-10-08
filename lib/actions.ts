@@ -39,7 +39,7 @@ export async function createCategory(name: string) {
 type CreateItemInput = {
   name: string
   categoryId: string
-  season: (typeof schema.seasonEnum.enumValues)[number]
+  season: Season
   colour: string
   newCategoryName?: string
 }

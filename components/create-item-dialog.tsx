@@ -33,6 +33,7 @@ import { seasonEnum } from "@/db/schema"
 import { createItem } from "@/lib/actions"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { COLOURS } from "@/lib/constants"
 
 const itemFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -75,6 +76,11 @@ export function CreateItemDialog({
   const seasons = seasonEnum.enumValues.map((value) => ({
     value,
     label: capitalise(value),
+  }))
+
+  const colourOptions = Object.entries(COLOURS).map(([label, value]) => ({
+    value,
+    label,
   }))
 
   return (
@@ -191,13 +197,23 @@ export function CreateItemDialog({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="create-item-colour">Colour</FieldLabel>
-                    <Input
-                      {...field}
-                      id="create-item-colour"
-                      aria-invalid={fieldState.invalid}
-                      placeholder=""
-                      autoComplete="off"
-                    />
+                    <Select
+                      items={colourOptions}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      name={field.name}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a colour" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {colourOptions.map((colour) => (
+                          <SelectItem key={colour.value} value={colour.value}>
+                            {colour.value}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}

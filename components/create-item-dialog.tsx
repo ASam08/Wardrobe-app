@@ -209,7 +209,11 @@ export function CreateItemDialog({
                       <SelectContent>
                         {colourOptions.map((colour) => (
                           <SelectItem key={colour.value} value={colour.value}>
-                            {colour.value}
+                            <span
+                              className="size-3 shrink-0 self-center rounded-full border"
+                              style={{ backgroundColor: colour.value }}
+                            />
+                            {colour.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -221,6 +225,11 @@ export function CreateItemDialog({
                 )}
               />
             </CardContent>
+            {form.formState.errors.root && (
+              <p className="px-6 text-sm text-destructive">
+                {form.formState.errors.root.message}
+              </p>
+            )}
             <CardFooter>
               <Field orientation="horizontal">
                 <Button

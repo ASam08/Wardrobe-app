@@ -10,7 +10,7 @@ export type WardrobeItem = {
   userId: string
   season: Season | null
   categoryId: string | null
-  color: string | null
+  colour: string | null
   notes: string | null
   category: {
     id: string

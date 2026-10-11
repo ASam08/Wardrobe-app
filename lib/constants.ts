@@ -1,4 +1,4 @@
-export const COLOURS: Record<string, string> = {
+export const COLOURS = {
   Black: "#000000",
   White: "#FFFFFF",
   Navy: "#000080",
@@ -13,4 +13,10 @@ export const COLOURS: Record<string, string> = {
   Orange: "#FFA500",
   Beige: "#F5F5DC",
   Mustard: "#E1AD01",
-}
+} as const
+
+export type ColourName = keyof typeof COLOURS
+export const COLOUR_NAMES = Object.keys(COLOURS) as [
+  ColourName,
+  ...ColourName[],
+]

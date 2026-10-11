@@ -33,7 +33,7 @@ import { seasonEnum } from "@/db/schema"
 import { createItem } from "@/lib/actions"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { COLOURS } from "@/lib/constants"
+import { COLOURS, COLOUR_NAMES } from "@/lib/constants"
 
 const itemFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -41,7 +41,7 @@ const itemFormSchema = z.object({
   season: z.enum(seasonEnum.enumValues, {
     message: "Invalid season",
   }),
-  colour: z.string().min(1, "Colour is required"),
+  colour: z.enum(COLOUR_NAMES, { message: "Colour is required" }),
 })
 
 export function CreateItemDialog({
@@ -57,7 +57,7 @@ export function CreateItemDialog({
       name: "",
       categoryId: "",
       season: "spring",
-      colour: "",
+      colour: COLOUR_NAMES[0],
     },
   })
   async function onSubmit(data: z.infer<typeof itemFormSchema>) {
@@ -78,9 +78,10 @@ export function CreateItemDialog({
     label: capitalise(value),
   }))
 
-  const colourOptions = Object.entries(COLOURS).map(([label, value]) => ({
-    value,
-    label,
+  const colourOptions = Object.entries(COLOURS).map(([name, hex]) => ({
+    value: name,
+    label: name,
+    hex,
   }))
 
   return (
@@ -211,7 +212,7 @@ export function CreateItemDialog({
                           <SelectItem key={colour.value} value={colour.value}>
                             <span
                               className="size-3 shrink-0 self-center rounded-full border"
-                              style={{ backgroundColor: colour.value }}
+                              style={{ backgroundColor: colour.hex }}
                             />
                             {colour.label}
                           </SelectItem>

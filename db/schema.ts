@@ -9,6 +9,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
+import { ColourName } from "@/lib/constants"
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -122,7 +123,7 @@ export const items = pgTable("items", {
     onDelete: "set null",
   }),
   season: seasonEnum("season"),
-  color: text("color"),
+  colour: text("colour").$type<ColourName>(),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

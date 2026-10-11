@@ -11,7 +11,7 @@ export default function ClothingCard({ item }: { item: WardrobeItem }) {
       <h3>{item.name}</h3>
       <p>Category: {item.category?.name || "None"}</p>
       <p>Season: {item.season}</p>
-      <p>Colour: {item.color}</p>
+      <p>Colour: {item.colour}</p>
     </Card>
   )
 }

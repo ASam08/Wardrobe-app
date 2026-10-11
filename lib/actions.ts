@@ -6,6 +6,7 @@ import { eq, or, isNull } from "drizzle-orm"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Season } from "@/lib/definitions"
+import { ColourName } from "@/lib/constants"
 
 function isSeason(value: string): value is Season {
   return (schema.seasonEnum.enumValues as readonly string[]).includes(value)
@@ -40,7 +41,7 @@ type CreateItemInput = {
   name: string
   categoryId: string
   season: Season
-  colour: string
+  colour: ColourName
   newCategoryName?: string
 }
 
@@ -62,7 +63,7 @@ export async function createItem(data: CreateItemInput) {
         name: data.name,
         categoryId,
         season: data.season,
-        color: data.colour,
+        colour: data.colour,
         userId: session.user.id,
       })
       .returning({ id: schema.items.id, name: schema.items.name })

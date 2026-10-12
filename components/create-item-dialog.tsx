@@ -34,15 +34,7 @@ import { createItem } from "@/lib/actions"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { COLOURS, COLOUR_NAMES } from "@/lib/constants"
-
-const itemFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  categoryId: z.string().min(1, "Category is required"),
-  season: z.enum(seasonEnum.enumValues, {
-    message: "Invalid season",
-  }),
-  colour: z.enum(COLOUR_NAMES, { message: "Colour is required" }),
-})
+import { itemFormSchema, type ItemFormValues } from "@/lib/schema"
 
 export function CreateItemDialog({
   categories,
@@ -51,16 +43,16 @@ export function CreateItemDialog({
 }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const form = useForm<z.infer<typeof itemFormSchema>>({
+  const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
     defaultValues: {
       name: "",
       categoryId: "",
       season: "spring",
-      colour: COLOUR_NAMES[0],
+      colours: [],
     },
   })
-  async function onSubmit(data: z.infer<typeof itemFormSchema>) {
+  async function onSubmit(data: ItemFormValues) {
     try {
       await createItem(data)
     } catch {
@@ -175,7 +167,7 @@ export function CreateItemDialog({
                       onValueChange={field.onChange}
                       name={field.name}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="create-item-season">
                         <SelectValue placeholder="Select a season" />
                       </SelectTrigger>
                       <SelectContent>
@@ -193,19 +185,22 @@ export function CreateItemDialog({
                 )}
               />
               <Controller
-                name="colour"
+                name="colours"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="create-item-colour">Colour</FieldLabel>
+                    <FieldLabel htmlFor="create-item-colours">
+                      Colours
+                    </FieldLabel>
                     <Select
+                      multiple
                       items={colourOptions}
                       value={field.value}
                       onValueChange={field.onChange}
                       name={field.name}
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a colour" />
+                      <SelectTrigger id="create-item-colours">
+                        <SelectValue placeholder="Select colours" />
                       </SelectTrigger>
                       <SelectContent>
                         {colourOptions.map((colour) => (

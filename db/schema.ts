@@ -123,7 +123,7 @@ export const items = pgTable("items", {
     onDelete: "set null",
   }),
   season: seasonEnum("season"),
-  colour: text("colour").$type<ColourName>(),
+  colours: text("colours").$type<ColourName>().array(),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

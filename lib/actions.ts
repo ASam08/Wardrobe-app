@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Season } from "@/lib/definitions"
 import { ColourName } from "@/lib/constants"
+import { itemFormSchema, type ItemFormValues } from "@/lib/schema"
 
 function isSeason(value: string): value is Season {
   return (schema.seasonEnum.enumValues as readonly string[]).includes(value)
@@ -37,24 +38,18 @@ export async function createCategory(name: string) {
     throw error
   }
 }
-type CreateItemInput = {
-  name: string
-  categoryId: string
-  season: Season
-  colour: ColourName
-  newCategoryName?: string
-}
 
-export async function createItem(data: CreateItemInput) {
+export async function createItem(input: ItemFormValues) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) throw new Error("User is not authenticated")
 
+  const data = itemFormSchema.parse(input)
   let categoryId = data.categoryId
-  if (categoryId === "NEW_CATEGORY") {
-    if (!data.newCategoryName) throw new Error("New category name is required")
-    const newCategory = await createCategory(data.newCategoryName)
-    categoryId = newCategory.id
-  }
+  // if (categoryId === "NEW_CATEGORY") {
+  //   if (!data.newCategoryName) throw new Error("New category name is required")
+  //   const newCategory = await createCategory(data.newCategoryName)
+  //   categoryId = newCategory.id
+  // }
 
   try {
     const result = await sqlConn
@@ -63,7 +58,7 @@ export async function createItem(data: CreateItemInput) {
         name: data.name,
         categoryId,
         season: data.season,
-        colour: data.colour,
+        colours: data.colours,
         userId: session.user.id,
       })
       .returning({ id: schema.items.id, name: schema.items.name })

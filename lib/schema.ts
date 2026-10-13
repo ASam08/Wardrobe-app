@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { seasonEnum } from "@/db/schema"
-import { COLOUR_NAMES } from "@/lib/constants"
+import { COLOUR_NAMES, NEW_CATEGORY } from "@/lib/constants"
 
 export const passwordSchema = z
   .string()
@@ -11,14 +11,20 @@ export const passwordSchema = z
     message: "Contain at least one special character.",
   })
 
-export const itemFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  categoryId: z.string().min(1, "Category is required"),
-  season: z.enum(seasonEnum.enumValues, { message: "Invalid season" }),
-  colours: z
-    .array(z.enum(COLOUR_NAMES))
-    .min(1, "Pick at least one colour")
-    .transform((c) => [...new Set(c)]),
-})
+export const itemFormSchema = z
+  .object({
+    name: z.string().min(1, "Name is required"),
+    categoryId: z.string().min(1, "Category is required"),
+    newCategoryName: z.string().trim().optional(),
+    season: z.enum(seasonEnum.enumValues, { message: "Invalid season" }),
+    colours: z
+      .array(z.enum(COLOUR_NAMES))
+      .min(1, "Pick at least one colour")
+      .transform((c) => [...new Set(c)]),
+  })
+  .refine((d) => d.categoryId !== NEW_CATEGORY || !!d.newCategoryName, {
+    message: "Enter a name for the new category",
+    path: ["categoryId"],
+  })
 
 export type ItemFormValues = z.infer<typeof itemFormSchema>

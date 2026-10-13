@@ -20,3 +20,5 @@ export const COLOUR_NAMES = Object.keys(COLOURS) as [
   ColourName,
   ...ColourName[],
 ]
+
+export const NEW_CATEGORY = "NEW_CATEGORY"

@@ -19,14 +19,7 @@ import {
   SelectValue,
   SelectItem,
 } from "@/components/ui/select"
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "@/components/ui/combobox"
+import { CategoryField } from "@/components/category-field"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { capitalise } from "@/lib/utils"
 import { seasonEnum } from "@/db/schema"
@@ -50,6 +43,7 @@ export function CreateItemDialog({
       categoryId: "",
       season: "spring",
       colours: [],
+      newCategoryName: "",
     },
   })
   async function onSubmit(data: ItemFormValues) {
@@ -113,48 +107,7 @@ export function CreateItemDialog({
                   </Field>
                 )}
               />
-              <Controller
-                name="categoryId"
-                control={form.control}
-                render={({ field, fieldState }) => {
-                  const selected =
-                    categories.find((c) => c.id === field.value) ?? null
-                  return (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="create-item-category">
-                        Category
-                      </FieldLabel>
-                      <Combobox
-                        items={categories}
-                        itemToStringLabel={(item) => item.name}
-                        value={selected}
-                        onValueChange={(item) => field.onChange(item?.id ?? "")}
-                        name={field.name}
-                      >
-                        <ComboboxInput
-                          id="create-item-category"
-                          placeholder="Select a category"
-                          aria-invalid={fieldState.invalid}
-                          autoComplete="off"
-                        />
-                        <ComboboxContent>
-                          <ComboboxEmpty>No results found</ComboboxEmpty>
-                          <ComboboxList>
-                            {(item) => (
-                              <ComboboxItem key={item.id} value={item}>
-                                {item.name}
-                              </ComboboxItem>
-                            )}
-                          </ComboboxList>
-                        </ComboboxContent>
-                      </Combobox>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )
-                }}
-              />
+              <CategoryField control={form.control} categories={categories} />
               <Controller
                 name="season"
                 control={form.control}

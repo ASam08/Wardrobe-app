@@ -19,6 +19,8 @@ function makeClient(endpoint: string) {
     endpoint,
     region: env("S3_REGION"),
     forcePathStyle: true,
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    responseChecksumValidation: "WHEN_REQUIRED",
     credentials: {
       accessKeyId: env("S3_ACCESS_KEY"),
       secretAccessKey: env("S3_SECRET_KEY"),

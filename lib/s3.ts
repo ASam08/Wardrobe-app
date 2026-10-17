@@ -7,34 +7,15 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
-
-function env(name: string): string {
-  const value = process.env[name]
-  if (!value) throw new Error(`Missing environment variable: ${name}`)
-  return value
-}
-
-function makeClient(endpoint: string) {
-  return new S3Client({
-    endpoint,
-    region: env("S3_REGION"),
-    forcePathStyle: true,
-    requestChecksumCalculation: "WHEN_REQUIRED",
-    responseChecksumValidation: "WHEN_REQUIRED",
-    credentials: {
-      accessKeyId: env("S3_ACCESS_KEY"),
-      secretAccessKey: env("S3_SECRET_KEY"),
-    },
-  })
-}
+import { env, makeS3Client } from "@/lib/s3-client"
 
 // Created lazily so `next build` (e.g. inside Docker) doesn't need S3 env vars
 let internalClient: S3Client | undefined
 let publicClient: S3Client | undefined
 
-const internal = () => (internalClient ??= makeClient(env("S3_ENDPOINT")))
+const internal = () => (internalClient ??= makeS3Client(env("S3_ENDPOINT")))
 const signer = () =>
-  (publicClient ??= makeClient(
+  (publicClient ??= makeS3Client(
     process.env.S3_PUBLIC_ENDPOINT ?? env("S3_ENDPOINT")
   ))
 
@@ -44,6 +25,7 @@ const bucket = () => env("S3_BUCKET_NAME")
 export function createUploadUrl(
   key: string,
   contentType: string,
+  contentLength: number,
   expiresIn = 300
 ) {
   return getSignedUrl(
@@ -52,6 +34,7 @@ export function createUploadUrl(
       Bucket: bucket(),
       Key: key,
       ContentType: contentType,
+      ContentLength: contentLength,
     }),
     { expiresIn }
   )

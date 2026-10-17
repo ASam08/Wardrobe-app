@@ -45,5 +45,8 @@ export async function register() {
 
     await migrate(db, { migrationsFolder: "./db/migrations" })
     console.log("Migrations complete")
+
+    const { applyBucketCorsOnBoot } = await import("./lib/s3-cors")
+    void applyBucketCorsOnBoot()
   }
 }

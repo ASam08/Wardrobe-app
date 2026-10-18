@@ -7,6 +7,8 @@ import {
   pgEnum,
   uniqueIndex,
   uuid,
+  integer,
+  unique,
 } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 import { ColourName } from "@/lib/constants"
@@ -128,3 +130,27 @@ export const items = pgTable("items", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })
+
+export const itemImages = pgTable(
+  "item_images",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => items.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key").notNull().unique(),
+    thumbKey: text("thumb_key").notNull().unique(),
+    contentType: text("content_type").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    unique("item_images_item_position_unique").on(table.itemId, table.position),
+  ]
+)
+
+export type ItemImage = typeof itemImages.$inferSelect

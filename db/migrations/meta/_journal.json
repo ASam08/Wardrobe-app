@@ -43,6 +43,13 @@
       "when": 1791794393593,
       "tag": "0005_next_impossible_man",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792317125987,
+      "tag": "0006_thick_turbo",
+      "breakpoints": true
     }
   ]
 }

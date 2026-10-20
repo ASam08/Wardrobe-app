@@ -36,7 +36,10 @@ export function createUploadUrl(
       ContentType: contentType,
       ContentLength: contentLength,
     }),
-    { expiresIn }
+    {
+      expiresIn,
+      signableHeaders: new Set(["content-type", "content-length", "host"]),
+    }
   )
 }
 
@@ -49,12 +52,17 @@ export function createDownloadUrl(key: string, expiresIn = 3600) {
   )
 }
 
-export async function objectExists(key: string) {
+export async function objectSize(key: string): Promise<number | null> {
   try {
-    await internal().send(new HeadObjectCommand({ Bucket: bucket(), Key: key }))
-    return true
-  } catch {
-    return false
+    const head = await internal().send(
+      new HeadObjectCommand({ Bucket: bucket(), Key: key })
+    )
+    return head.ContentLength ?? null
+  } catch (error) {
+    const status = (error as { $metadata?: { httpStatusCode?: number } })
+      .$metadata?.httpStatusCode
+    if (status === 404) return null
+    throw error
   }
 }
 

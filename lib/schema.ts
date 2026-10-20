@@ -1,6 +1,11 @@
 import { z } from "zod"
 import { seasonEnum } from "@/db/schema"
 import { COLOUR_NAMES, NEW_CATEGORY } from "@/lib/constants"
+import {
+  MAX_FULL_BYTES,
+  MAX_THUMB_BYTES,
+  IMAGE_TYPE_LIST,
+} from "@/lib/image-config"
 
 export const passwordSchema = z
   .string()
@@ -28,3 +33,18 @@ export const itemFormSchema = z
   })
 
 export type ItemFormValues = z.infer<typeof itemFormSchema>
+
+export const imageRequestSchema = z.object({
+  itemId: z.string().uuid(),
+  contentType: z.enum(IMAGE_TYPE_LIST),
+  fullSize: z.number().int().positive().max(MAX_FULL_BYTES),
+  thumbSize: z.number().int().positive().max(MAX_THUMB_BYTES),
+})
+
+export type ImageRequestValues = z.infer<typeof imageRequestSchema>
+
+export const imageConfirmSchema = imageRequestSchema.extend({
+  imageId: z.string().uuid(),
+})
+
+export type ImageConfirmValues = z.infer<typeof imageConfirmSchema>

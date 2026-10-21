@@ -14,3 +14,7 @@ export const MAX_FULL_BYTES = 5 * 1024 * 1024
 export const MAX_THUMB_BYTES = 500 * 1024
 
 export const MAX_IMAGES_PER_ITEM = 1
+
+export const FULL_MAX_EDGE = 1600
+export const THUMB_MAX_EDGE = 400
+export const MAX_SOURCE_BYTES = 30 * 1024 * 1024

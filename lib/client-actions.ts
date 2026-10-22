@@ -49,7 +49,12 @@ async function encode(bitmap: ImageBitmap, maxEdge: number, maxBytes: number) {
 export async function prepareImage(file: File): Promise<PreparedImage> {
   if (file.size > MAX_SOURCE_BYTES) throw new Error("That file is too large")
 
-  const bitmap = await decode(file)
+  let bitmap: ImageBitmap
+  try {
+    bitmap = await decode(file)
+  } catch {
+    throw new Error("Couldn't read that image. Try a JPEG, PNG or WebP photo.")
+  }
   try {
     const full = await encode(bitmap, FULL_MAX_EDGE, MAX_FULL_BYTES)
     const thumb = await encode(bitmap, THUMB_MAX_EDGE, MAX_THUMB_BYTES)

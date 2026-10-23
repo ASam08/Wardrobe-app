@@ -5,6 +5,7 @@ import {
   MAX_THUMB_BYTES,
   MAX_SOURCE_BYTES,
 } from "@/lib/image-config"
+import { requestImageUpload, confirmImageUpload } from "@/lib/actions"
 
 export type PreparedImage = {
   contentType: "image/jpeg"
@@ -62,4 +63,31 @@ export async function prepareImage(file: File): Promise<PreparedImage> {
   } finally {
     bitmap.close()
   }
+}
+
+export async function uploadPreparedImage(
+  itemId: string,
+  prepared: PreparedImage
+) {
+  const { contentType, full, thumb } = prepared
+  const input = {
+    itemId,
+    contentType,
+    fullSize: full.size,
+    thumbSize: thumb.size,
+  }
+
+  const { imageId, fullUrl, thumbUrl } = await requestImageUpload(input)
+
+  const put = async (url: string, blob: Blob) => {
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: blob,
+    })
+    if (!res.ok) throw new Error(`Upload failed (${res.status})`)
+  }
+  await Promise.all([put(fullUrl, full), put(thumbUrl, thumb)])
+
+  return confirmImageUpload({ ...input, imageId })
 }

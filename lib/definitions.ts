@@ -16,4 +16,5 @@ export type WardrobeItem = {
     id: string
     name: string
   } | null
+  thumbUrl: string | null
 }

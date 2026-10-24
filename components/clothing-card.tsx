@@ -1,13 +1,26 @@
 "use client"
 import { Card } from "@/components/ui/card"
-import { WardrobeItem } from "@/lib/definitions"
-import { authClient } from "@/lib/auth-client"
+import type { WardrobeItem } from "@/lib/definitions"
 
 export default function ClothingCard({ item }: { item: WardrobeItem }) {
-  const { data: session, isPending, error, refetch } = authClient.useSession()
-
   return (
     <Card className="p-2">
+      <div className="aspect-4/5 w-full overflow-hidden rounded-md bg-muted">
+        {item.thumbUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- presigned S3 URL, small thumbnail
+          <img
+            src={item.thumbUrl}
+            alt={item.name}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
+            No image
+          </div>
+        )}
+      </div>
       <h3>{item.name}</h3>
       <p>Category: {item.category?.name || "None"}</p>
       <p>

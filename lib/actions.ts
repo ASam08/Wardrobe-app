@@ -25,14 +25,14 @@ function isSeason(value: string): value is Season {
   return (schema.seasonEnum.enumValues as readonly string[]).includes(value)
 }
 
-async function requireUserId() {
+export async function retrieveUserId() {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) throw new Error("User is not authenticated")
   return session.user.id
 }
 
 export async function createCategory(name: string) {
-  const userId = await requireUserId()
+  const userId = await retrieveUserId()
 
   const trimmed = name.trim()
   if (!trimmed) throw new Error("Category name is required")
@@ -70,7 +70,7 @@ export async function createCategory(name: string) {
 }
 
 export async function createItem(input: ItemFormValues) {
-  const userId = await requireUserId()
+  const userId = await retrieveUserId()
 
   const data = itemFormSchema.parse(input)
   let categoryId = data.categoryId
@@ -118,7 +118,7 @@ function imageKeys(
 }
 
 export async function requestImageUpload(input: ImageRequestValues) {
-  const userId = await requireUserId()
+  const userId = await retrieveUserId()
   const data = imageRequestSchema.parse(input)
   await assertOwnsItem(userId, data.itemId)
 
@@ -145,7 +145,7 @@ export async function requestImageUpload(input: ImageRequestValues) {
 }
 
 export async function confirmImageUpload(input: ImageConfirmValues) {
-  const userId = await requireUserId()
+  const userId = await retrieveUserId()
   const data = imageConfirmSchema.parse(input)
   await assertOwnsItem(userId, data.itemId)
 

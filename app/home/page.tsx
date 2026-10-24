@@ -15,8 +15,8 @@ export default async function HomePage() {
     redirect("/login")
   }
 
-  const categories = await retrieveCategories(session.user.id)
-  const retrievedItems: WardrobeItem[] = await retrieveItems(session.user.id)
+  const categories = await retrieveCategories()
+  const retrievedItems: WardrobeItem[] = await retrieveItems()
 
   return (
     <div>

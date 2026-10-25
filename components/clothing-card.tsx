@@ -1,6 +1,7 @@
 "use client"
 import { Card } from "@/components/ui/card"
 import type { WardrobeItem } from "@/lib/definitions"
+import { DeleteItemButton } from "./delete-item-button"
 
 export default function ClothingCard({ item }: { item: WardrobeItem }) {
   return (
@@ -36,6 +37,7 @@ export default function ClothingCard({ item }: { item: WardrobeItem }) {
         ) : (
           <p>Colours: {item.colours.join(", ")}</p>
         ))}
+      <DeleteItemButton itemId={item.id} itemName={item.name} />
     </Card>
   )
 }

@@ -3,6 +3,7 @@
 import { sqlConn } from "@/lib/db"
 import * as schema from "@/db/schema"
 import { eq, or, isNull, and, sql } from "drizzle-orm"
+import { z } from "zod"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { Season } from "@/lib/definitions"
@@ -193,4 +194,39 @@ export async function confirmImageUpload(input: ImageConfirmValues) {
     })
     .returning({ id: schema.itemImages.id })
   return row
+}
+
+export async function deleteItem(itemId: string) {
+  const userId = await retrieveUserId()
+  const id = z.string().uuid().parse(itemId)
+
+  const keys = await sqlConn.transaction(async (tx) => {
+    const images = await tx
+      .delete(schema.itemImages)
+      .where(
+        and(
+          eq(schema.itemImages.itemId, id),
+          eq(schema.itemImages.userId, userId)
+        )
+      )
+      .returning({
+        storageKey: schema.itemImages.storageKey,
+        thumbKey: schema.itemImages.thumbKey,
+      })
+
+    const deleted = await tx
+      .delete(schema.items)
+      .where(and(eq(schema.items.id, id), eq(schema.items.userId, userId)))
+      .returning({ id: schema.items.id })
+    if (deleted.length === 0) throw new Error("Item not found")
+
+    return images.flatMap((image) => [image.storageKey, image.thumbKey])
+  })
+
+  const results = await Promise.allSettled(keys.map((key) => deleteObject(key)))
+  for (const result of results) {
+    if (result.status === "rejected") {
+      console.error("Failed to delete object for deleted item:", result.reason)
+    }
+  }
 }

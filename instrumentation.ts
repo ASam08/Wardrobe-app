@@ -48,5 +48,8 @@ export async function register() {
 
     const { applyBucketCorsOnBoot } = await import("./lib/s3-cors")
     void applyBucketCorsOnBoot()
+
+    const { startOrphanSweeper } = await import("./lib/orphan-sweep")
+    startOrphanSweeper()
   }
 }

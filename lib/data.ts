@@ -42,6 +42,9 @@ export async function retrieveItems() {
         thumbUrl: images[0]
           ? await createDownloadUrl(images[0].thumbKey)
           : null,
+        fullUrl: images[0]
+          ? await createDownloadUrl(images[0].storageKey)
+          : null,
       }))
     )
   } catch (error) {

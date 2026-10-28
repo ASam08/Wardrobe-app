@@ -3,14 +3,14 @@ import { Card } from "@/components/ui/card"
 import type { WardrobeItem } from "@/lib/definitions"
 import { DeleteItemButton } from "./delete-item-button"
 
-export default function ClothingCard({ item }: { item: WardrobeItem }) {
+export default function ClothingOpenCard({ item }: { item: WardrobeItem }) {
   return (
     <Card className="p-2">
       <div className="aspect-4/5 w-full overflow-hidden rounded-md bg-muted">
-        {item.thumbUrl ? (
+        {item.fullUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- presigned S3 URL, small thumbnail
           <img
-            src={item.thumbUrl}
+            src={item.fullUrl}
             alt={item.name}
             loading="lazy"
             decoding="async"

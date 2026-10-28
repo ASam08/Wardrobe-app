@@ -223,6 +223,7 @@ export function CreateItemDialog({
                         aria-invalid={fieldState.invalid}
                         placeholder=""
                         autoComplete="off"
+                        required
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />

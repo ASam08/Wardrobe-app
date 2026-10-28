@@ -1,4 +1,3 @@
-// components/category-field.tsx
 "use client"
 
 import * as React from "react"

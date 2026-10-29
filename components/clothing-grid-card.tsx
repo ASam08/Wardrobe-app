@@ -11,7 +11,7 @@ export default function ClothingGridCard({
 }) {
   return (
     <Card className="p-2" onClick={onClick}>
-      <div className="aspect-4/5 w-full overflow-hidden rounded-md bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
         {item.thumbUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- presigned S3 URL, small thumbnail
           <img
@@ -19,7 +19,7 @@ export default function ClothingGridCard({
             alt={item.name}
             loading="lazy"
             decoding="async"
-            className="size-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
           />
         ) : (
           <div className="flex size-full items-center justify-center text-sm text-muted-foreground">

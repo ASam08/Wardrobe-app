@@ -186,7 +186,7 @@ export function CreateItemDialog({
       <DialogTrigger render={<Button>Create Item</Button>} />
       <DialogContent>
         <form id="create-item-form" onSubmit={form.handleSubmit(onSubmit)}>
-          <Card>
+          <Card className="-m-(--card-spacing)">
             <CardHeader>
               <CardTitle>Create Item</CardTitle>
             </CardHeader>
@@ -309,6 +309,7 @@ export function CreateItemDialog({
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     onChange={onFileChange}
+                    className="file:mr-3 file:h-full file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-2 file:text-primary-foreground"
                   />
                   {isPreparing && (
                     <p className="text-sm text-muted-foreground">

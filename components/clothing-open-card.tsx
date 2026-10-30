@@ -5,8 +5,8 @@ import { DeleteItemButton } from "./delete-item-button"
 
 export default function ClothingOpenCard({ item }: { item: WardrobeItem }) {
   return (
-    <Card className="p-2">
-      <div className="aspect-4/5 w-full overflow-hidden rounded-md bg-muted">
+    <Card className="-m-(--card-spacing) p-4">
+      <div className="aspect-square w-full overflow-hidden rounded-md bg-muted">
         {item.fullUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- presigned S3 URL, small thumbnail
           <img

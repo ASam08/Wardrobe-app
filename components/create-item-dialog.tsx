@@ -32,26 +32,40 @@ import {
   type PreparedImage,
   uploadPreparedImage,
 } from "@/lib/client-actions"
+import { WardrobeItem } from "@/lib/definitions"
 
 type PickedImage = { prepared: PreparedImage; previewUrl: string }
 type SavedItem = { id: string; name: string }
 
 export function CreateItemDialog({
   categories,
+  calledType,
+  existingItem,
 }: {
   categories: { id: string; name: string }[]
+  calledType: "create" | "edit"
+  existingItem?: WardrobeItem
 }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
-    defaultValues: {
-      name: "",
-      categoryId: "",
-      season: "spring",
-      colours: [],
-      newCategoryName: "",
-    },
+    defaultValues:
+      calledType === "edit" && existingItem
+        ? {
+            name: existingItem.name,
+            categoryId: existingItem.categoryId!,
+            season: existingItem.season!,
+            colours: existingItem.colours!,
+            newCategoryName: "",
+          }
+        : {
+            name: "",
+            categoryId: "",
+            season: "spring",
+            colours: [],
+            newCategoryName: "",
+          },
   })
 
   const [image, setImage] = useState<PickedImage | null>(null)
@@ -183,12 +197,20 @@ export function CreateItemDialog({
         }
       }}
     >
-      <DialogTrigger render={<Button>Create Item</Button>} />
+      <DialogTrigger
+        render={
+          <Button>
+            {calledType === "create" ? "Create Item" : "Edit Item"}
+          </Button>
+        }
+      />
       <DialogContent>
-        <form id="create-item-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="item-form" onSubmit={form.handleSubmit(onSubmit)}>
           <Card className="-m-(--card-spacing)">
             <CardHeader>
-              <CardTitle>Create Item</CardTitle>
+              <CardTitle>
+                {calledType === "create" ? "Create Item" : "Edit Item"}
+              </CardTitle>
             </CardHeader>
             {savedItem ? (
               <CardContent className="space-y-4">
@@ -214,12 +236,10 @@ export function CreateItemDialog({
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="create-item-name">
-                        Item Name
-                      </FieldLabel>
+                      <FieldLabel htmlFor="item-name">Item Name</FieldLabel>
                       <Input
                         {...field}
-                        id="create-item-name"
+                        id="item-name"
                         aria-invalid={fieldState.invalid}
                         placeholder=""
                         autoComplete="off"
@@ -237,16 +257,14 @@ export function CreateItemDialog({
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="create-item-season">
-                        Season
-                      </FieldLabel>
+                      <FieldLabel htmlFor="item-season">Season</FieldLabel>
                       <Select
                         items={seasons}
                         value={field.value}
                         onValueChange={field.onChange}
                         name={field.name}
                       >
-                        <SelectTrigger id="create-item-season">
+                        <SelectTrigger id="item-season">
                           <SelectValue placeholder="Select a season" />
                         </SelectTrigger>
                         <SelectContent>
@@ -268,9 +286,7 @@ export function CreateItemDialog({
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="create-item-colours">
-                        Colours
-                      </FieldLabel>
+                      <FieldLabel htmlFor="item-colours">Colours</FieldLabel>
                       <Select
                         multiple
                         items={colourOptions}
@@ -278,7 +294,7 @@ export function CreateItemDialog({
                         onValueChange={field.onChange}
                         name={field.name}
                       >
-                        <SelectTrigger id="create-item-colours">
+                        <SelectTrigger id="item-colours">
                           <SelectValue placeholder="Select colours" />
                         </SelectTrigger>
                         <SelectContent>
@@ -300,12 +316,10 @@ export function CreateItemDialog({
                   )}
                 />
                 <Field data-invalid={!!imageError}>
-                  <FieldLabel htmlFor="create-item-image">
-                    Image (optional)
-                  </FieldLabel>
+                  <FieldLabel htmlFor="item-image">Image (optional)</FieldLabel>
                   <Input
                     ref={fileInputRef}
-                    id="create-item-image"
+                    id="item-image"
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     onChange={onFileChange}

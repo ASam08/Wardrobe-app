@@ -27,7 +27,7 @@ export default async function HomePage() {
         <p>You are not logged in.</p>
       )}
 
-      <CreateItemDialog categories={categories} />
+      <CreateItemDialog categories={categories} calledType="create" />
 
       <WardrobeGrid items={retrievedItems} />
     </div>

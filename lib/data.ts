@@ -5,6 +5,7 @@ import * as schema from "@/db/schema"
 import { eq, or, isNull, asc } from "drizzle-orm"
 import { createDownloadUrl } from "@/lib/s3"
 import { retrieveUserId } from "@/lib/actions"
+import { WardrobeItem } from "@/lib/definitions"
 
 export async function retrieveCategories() {
   const userId = await retrieveUserId()
@@ -25,7 +26,7 @@ export async function retrieveCategories() {
   }
 }
 
-export async function retrieveItems() {
+export async function retrieveItems(): Promise<WardrobeItem[]> {
   const userId = await retrieveUserId()
   try {
     const rows = await sqlConn.query.items.findMany({

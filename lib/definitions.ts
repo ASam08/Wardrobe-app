@@ -1,4 +1,5 @@
 import * as schema from "@/db/schema"
+import type { ColourName } from "@/lib/constants"
 
 export type Season = (typeof schema.seasonEnum.enumValues)[number]
 
@@ -10,7 +11,7 @@ export type WardrobeItem = {
   userId: string
   season: Season | null
   categoryId: string | null
-  colours: string[] | null
+  colours: ColourName[] | null
   notes: string | null
   category: {
     id: string

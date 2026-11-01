@@ -22,7 +22,7 @@ import { CategoryField } from "@/components/category-field"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { capitalise } from "@/lib/utils"
 import { seasonEnum } from "@/db/schema"
-import { createItem } from "@/lib/actions"
+import { createItem, updateItem } from "@/lib/actions"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { COLOURS } from "@/lib/constants"
@@ -41,11 +41,10 @@ export function CreateItemDialog({
   categories,
   calledType,
   existingItem,
-}: {
-  categories: { id: string; name: string }[]
-  calledType: "create" | "edit"
-  existingItem?: WardrobeItem
-}) {
+}: { categories: { id: string; name: string }[] } & (
+  | { calledType: "create"; existingItem?: undefined }
+  | { calledType: "edit"; existingItem: WardrobeItem }
+)) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const form = useForm<ItemFormValues>({
@@ -162,6 +161,18 @@ export function CreateItemDialog({
   }
 
   async function onSubmit(data: ItemFormValues) {
+    if (calledType === "edit") {
+      try {
+        await updateItem(existingItem.id, data)
+      } catch {
+        form.setError("root", {
+          message: "Couldn't save your changes. Please try again.",
+        })
+        return
+      }
+      finish()
+      return
+    }
     let item: SavedItem
     try {
       item = await createItem(data)
@@ -315,42 +326,46 @@ export function CreateItemDialog({
                     </Field>
                   )}
                 />
-                <Field data-invalid={!!imageError}>
-                  <FieldLabel htmlFor="item-image">Image (optional)</FieldLabel>
-                  <Input
-                    ref={fileInputRef}
-                    id="item-image"
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={onFileChange}
-                    className="file:mr-3 file:h-full file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-2 file:text-primary-foreground"
-                  />
-                  {isPreparing && (
-                    <p className="text-sm text-muted-foreground">
-                      Preparing image…
-                    </p>
-                  )}
-                  {image && (
-                    <div className="flex items-center gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- blob: URL, can't use next/image */}
-                      <img
-                        src={image.previewUrl}
-                        alt="Selected image preview"
-                        className="h-24 rounded border object-cover"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={clearImage}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  )}
-                  {imageError && (
-                    <p className="text-sm text-destructive">{imageError}</p>
-                  )}
-                </Field>
+                {calledType === "create" && (
+                  <Field data-invalid={!!imageError}>
+                    <FieldLabel htmlFor="item-image">
+                      Image (optional)
+                    </FieldLabel>
+                    <Input
+                      ref={fileInputRef}
+                      id="item-image"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={onFileChange}
+                      className="file:mr-3 file:h-full file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-2 file:text-primary-foreground"
+                    />
+                    {isPreparing && (
+                      <p className="text-sm text-muted-foreground">
+                        Preparing image…
+                      </p>
+                    )}
+                    {image && (
+                      <div className="flex items-center gap-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- blob: URL, can't use next/image */}
+                        <img
+                          src={image.previewUrl}
+                          alt="Selected image preview"
+                          className="h-24 rounded border object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={clearImage}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                    {imageError && (
+                      <p className="text-sm text-destructive">{imageError}</p>
+                    )}
+                  </Field>
+                )}
               </CardContent>
             )}
             {form.formState.errors.root && (
@@ -384,7 +399,7 @@ export function CreateItemDialog({
                   </Button>
                   <Button
                     type="submit"
-                    form="create-item-form"
+                    form="item-form"
                     disabled={form.formState.isSubmitting || isPreparing}
                   >
                     Submit

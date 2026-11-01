@@ -230,3 +230,10 @@ export async function deleteItem(itemId: string) {
     }
   }
 }
+
+export async function updateItem(itemId: string, input: ItemFormValues) {
+  const userId = await retrieveUserId()
+  const id = z.string().uuid().parse(itemId)
+  await assertOwnsItem(userId, id)
+  const data = itemFormSchema.parse(input)
+}

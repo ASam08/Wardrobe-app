@@ -72,14 +72,8 @@ export async function createCategory(name: string) {
 
 export async function createItem(input: ItemFormValues) {
   const userId = await retrieveUserId()
-
   const data = itemFormSchema.parse(input)
-  let categoryId = data.categoryId
-  if (categoryId === "NEW_CATEGORY") {
-    if (!data.newCategoryName) throw new Error("New category name is required")
-    const newCategory = await createCategory(data.newCategoryName)
-    categoryId = newCategory.id
-  }
+  const categoryId = await resolveCategoryId(userId, data)
 
   try {
     const result = await sqlConn
@@ -105,6 +99,23 @@ async function assertOwnsItem(userId: string, itemId: string) {
     columns: { id: true },
   })
   if (!item) throw new Error("Item not found")
+}
+
+async function resolveCategoryId(userId: string, data: ItemFormValues) {
+  if (data.categoryId === "NEW_CATEGORY") {
+    if (!data.newCategoryName) throw new Error("New category name is required")
+    return (await createCategory(data.newCategoryName)).id
+  }
+
+  const available = await sqlConn.query.categories.findFirst({
+    where: and(
+      eq(schema.categories.id, data.categoryId),
+      or(eq(schema.categories.userId, userId), isNull(schema.categories.userId))
+    ),
+    columns: { id: true },
+  })
+  if (!available) throw new Error("Category not found")
+  return available.id
 }
 
 function imageKeys(
@@ -233,7 +244,26 @@ export async function deleteItem(itemId: string) {
 
 export async function updateItem(itemId: string, input: ItemFormValues) {
   const userId = await retrieveUserId()
-  const id = z.string().uuid().parse(itemId)
-  await assertOwnsItem(userId, id)
   const data = itemFormSchema.parse(input)
+  await assertOwnsItem(userId, itemId)
+  const categoryId = await resolveCategoryId(userId, data)
+
+  try {
+    const [updated] = await sqlConn
+      .update(schema.items)
+      .set({
+        name: data.name,
+        categoryId,
+        season: data.season,
+        colours: data.colours,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(schema.items.id, itemId), eq(schema.items.userId, userId)))
+      .returning({ id: schema.items.id, name: schema.items.name })
+    if (!updated) throw new Error("Item not found")
+    return updated
+  } catch (error) {
+    console.error("Error updating item:", error)
+    throw error
+  }
 }

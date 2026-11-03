@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/dialog"
 import ClothingOpenCard from "@/components/clothing-open-card"
 
-export default function WardrobeGrid({ items }: { items: WardrobeItem[] }) {
+export default function WardrobeGrid({
+  items,
+  categories,
+}: {
+  items: WardrobeItem[]
+  categories: { id: string; name: string }[]
+}) {
   const [openItem, setOpenItem] = useState<string | null>(null)
   const [openCard, setOpenCard] = useState(false)
   const selected = items.find((i) => i.id === openItem)
@@ -41,7 +47,9 @@ export default function WardrobeGrid({ items }: { items: WardrobeItem[] }) {
 
       <Dialog open={openCard && !!selected} onOpenChange={setOpenCard}>
         <DialogContent className="max-h-full">
-          {selected && <ClothingOpenCard item={selected} />}
+          {selected && (
+            <ClothingOpenCard item={selected} categories={categories} />
+          )}
         </DialogContent>
       </Dialog>
     </div>

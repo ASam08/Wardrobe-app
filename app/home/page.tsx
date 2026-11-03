@@ -1,5 +1,4 @@
 import { CreateItemDialog } from "@/components/create-item-dialog"
-import { Button } from "@/components/ui/button"
 import { auth } from "@/lib/auth"
 import { retrieveCategories, retrieveItems } from "@/lib/data"
 import { headers } from "next/headers"
@@ -29,7 +28,7 @@ export default async function HomePage() {
 
       <CreateItemDialog categories={categories} calledType="create" />
 
-      <WardrobeGrid items={retrievedItems} />
+      <WardrobeGrid items={retrievedItems} categories={categories} />
     </div>
   )
 }

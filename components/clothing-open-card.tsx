@@ -2,8 +2,15 @@
 import { Card } from "@/components/ui/card"
 import type { WardrobeItem } from "@/lib/definitions"
 import { DeleteItemButton } from "./delete-item-button"
+import { CreateItemDialog } from "./create-item-dialog"
 
-export default function ClothingOpenCard({ item }: { item: WardrobeItem }) {
+export default function ClothingOpenCard({
+  item,
+  categories,
+}: {
+  item: WardrobeItem
+  categories: { id: string; name: string }[]
+}) {
   return (
     <Card className="-m-(--card-spacing) p-4">
       <div className="aspect-square w-full overflow-hidden rounded-md bg-muted">
@@ -37,6 +44,11 @@ export default function ClothingOpenCard({ item }: { item: WardrobeItem }) {
         ) : (
           <p>Colours: {item.colours.join(", ")}</p>
         ))}
+      <CreateItemDialog
+        categories={categories}
+        calledType="edit"
+        existingItem={item}
+      />
       <DeleteItemButton itemId={item.id} itemName={item.name} />
     </Card>
   )

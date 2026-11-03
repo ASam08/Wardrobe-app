@@ -25,11 +25,6 @@ export function CategoryField({
 }) {
   const { field, fieldState } = useController({ name: "categoryId", control })
   const { field: newName } = useController({ name: "newCategoryName", control })
-  const [query, setQuery] = React.useState("")
-
-  React.useEffect(() => {
-    if (!field.value) setQuery("")
-  }, [field.value])
 
   const pending = React.useMemo<Option | null>(
     () =>
@@ -38,6 +33,15 @@ export function CategoryField({
         : null,
     [field.value, newName.value]
   )
+
+  const selected: Option | null =
+    pending ?? categories.find((c) => c.id === field.value) ?? null
+
+  const [query, setQuery] = React.useState(() => selected?.name ?? "")
+
+  React.useEffect(() => {
+    setQuery(selected?.name ?? "")
+  }, [selected?.id, selected?.name])
 
   const typed = query.trim()
   const options = React.useMemo<Option[]>(() => {
@@ -56,9 +60,6 @@ export function CategoryField({
         ]
       : base
   }, [categories, pending, typed])
-
-  const selected: Option | null =
-    pending ?? categories.find((c) => c.id === field.value) ?? null
 
   function handleChange(option: Option | null) {
     if (option?.creatable) {

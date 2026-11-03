@@ -37,6 +37,24 @@ import { WardrobeItem } from "@/lib/definitions"
 type PickedImage = { prepared: PreparedImage; previewUrl: string }
 type SavedItem = { id: string; name: string }
 
+function defaultsFor(item?: WardrobeItem): ItemFormValues {
+  return item
+    ? {
+        name: item.name,
+        categoryId: item.categoryId ?? "",
+        season: item.season ?? "spring",
+        colours: item.colours ?? [],
+        newCategoryName: "",
+      }
+    : {
+        name: "",
+        categoryId: "",
+        season: "spring",
+        colours: [],
+        newCategoryName: "",
+      }
+}
+
 export function CreateItemDialog({
   categories,
   calledType,
@@ -49,22 +67,7 @@ export function CreateItemDialog({
   const [open, setOpen] = useState(false)
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
-    defaultValues:
-      calledType === "edit" && existingItem
-        ? {
-            name: existingItem.name,
-            categoryId: existingItem.categoryId!,
-            season: existingItem.season!,
-            colours: existingItem.colours!,
-            newCategoryName: "",
-          }
-        : {
-            name: "",
-            categoryId: "",
-            season: "spring",
-            colours: [],
-            newCategoryName: "",
-          },
+    defaultValues: defaultsFor(existingItem),
   })
 
   const [image, setImage] = useState<PickedImage | null>(null)
@@ -97,7 +100,7 @@ export function CreateItemDialog({
   }
 
   function resetAll() {
-    form.reset()
+    form.reset(defaultsFor(existingItem))
     clearImage()
     setSavedItem(null)
   }
@@ -201,6 +204,7 @@ export function CreateItemDialog({
       open={open}
       onOpenChange={(next) => {
         if (!next && (form.formState.isSubmitting || isRetrying)) return
+        if (next) form.reset(defaultsFor(existingItem))
         setOpen(next)
         if (!next) {
           if (savedItem) router.refresh()

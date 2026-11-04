@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card"
 import type { WardrobeItem } from "@/lib/definitions"
 import { DeleteItemButton } from "./delete-item-button"
-import { CreateItemDialog } from "./create-item-dialog"
+import { ItemDialog } from "./item-dialog"
 
 export default function ClothingOpenCard({
   item,
@@ -44,7 +44,7 @@ export default function ClothingOpenCard({
         ) : (
           <p>Colours: {item.colours.join(", ")}</p>
         ))}
-      <CreateItemDialog
+      <ItemDialog
         categories={categories}
         calledType="edit"
         existingItem={item}

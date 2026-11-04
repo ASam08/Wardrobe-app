@@ -1,4 +1,4 @@
-import { CreateItemDialog } from "@/components/create-item-dialog"
+import { ItemDialog } from "@/components/item-dialog"
 import { auth } from "@/lib/auth"
 import { retrieveCategories, retrieveItems } from "@/lib/data"
 import { headers } from "next/headers"
@@ -26,7 +26,7 @@ export default async function HomePage() {
         <p>You are not logged in.</p>
       )}
 
-      <CreateItemDialog categories={categories} calledType="create" />
+      <ItemDialog categories={categories} calledType="create" />
 
       <WardrobeGrid items={retrievedItems} categories={categories} />
     </div>

@@ -55,7 +55,7 @@ function defaultsFor(item?: WardrobeItem): ItemFormValues {
       }
 }
 
-export function CreateItemDialog({
+export function ItemDialog({
   categories,
   calledType,
   existingItem,
@@ -173,7 +173,7 @@ export function CreateItemDialog({
         })
         return
       }
-      finish()
+      await uploadAndFinish({ id: existingItem.id, name: data.name })
       return
     }
     let item: SavedItem
@@ -330,7 +330,19 @@ export function CreateItemDialog({
                     </Field>
                   )}
                 />
-                {calledType === "create" && (
+                {calledType === "edit" && existingItem.thumbUrl && (
+                  <Field>
+                    <FieldLabel>Image</FieldLabel>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- presigned S3 URL */}
+                    <img
+                      src={existingItem.thumbUrl}
+                      alt={existingItem.name}
+                      className="h-24 rounded border object-cover"
+                    />
+                  </Field>
+                )}
+
+                {(calledType === "create" || !existingItem.thumbUrl) && (
                   <Field data-invalid={!!imageError}>
                     <FieldLabel htmlFor="item-image">
                       Image (optional)
@@ -406,7 +418,7 @@ export function CreateItemDialog({
                     form="item-form"
                     disabled={form.formState.isSubmitting || isPreparing}
                   >
-                    Submit
+                    {calledType === "create" ? "Create" : "Update"}
                   </Button>
                 </Field>
               )}

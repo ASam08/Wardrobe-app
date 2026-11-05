@@ -46,6 +46,7 @@ export async function retrieveItems(): Promise<WardrobeItem[]> {
         fullUrl: images[0]
           ? await createDownloadUrl(images[0].storageKey)
           : null,
+        imageId: images[0]?.id ?? null,
       }))
     )
   } catch (error) {

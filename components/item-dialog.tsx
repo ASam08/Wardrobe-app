@@ -22,7 +22,7 @@ import { CategoryField } from "@/components/category-field"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { capitalise } from "@/lib/utils"
 import { seasonEnum } from "@/db/schema"
-import { createItem, updateItem } from "@/lib/actions"
+import { createItem, updateItem, deleteItemImage } from "@/lib/actions"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { COLOURS } from "@/lib/constants"
@@ -33,6 +33,7 @@ import {
   uploadPreparedImage,
 } from "@/lib/client-actions"
 import { WardrobeItem } from "@/lib/definitions"
+import { cn } from "@/lib/utils"
 
 type PickedImage = { prepared: PreparedImage; previewUrl: string }
 type SavedItem = { id: string; name: string }
@@ -75,6 +76,7 @@ export function ItemDialog({
   const [imageError, setImageError] = useState<string | null>(null)
   const [savedItem, setSavedItem] = useState<SavedItem | null>(null)
   const [isRetrying, setIsRetrying] = useState(false)
+  const [removeExisting, setRemoveExisting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<PickedImage | null>(null)
   const pickCounter = useRef(0)
@@ -103,6 +105,7 @@ export function ItemDialog({
     form.reset(defaultsFor(existingItem))
     clearImage()
     setSavedItem(null)
+    setRemoveExisting(false)
   }
 
   function finish() {
@@ -172,6 +175,18 @@ export function ItemDialog({
           message: "Couldn't save your changes. Please try again.",
         })
         return
+      }
+      if (removeExisting && existingItem.imageId) {
+        try {
+          await deleteItemImage(existingItem.imageId)
+        } catch {
+          form.setError("root", {
+            message:
+              "Your changes were saved, but the image couldn't be removed. Press Submit to try again.",
+          })
+          router.refresh()
+          return
+        }
       }
       await uploadAndFinish({ id: existingItem.id, name: data.name })
       return
@@ -333,12 +348,29 @@ export function ItemDialog({
                 {calledType === "edit" && existingItem.thumbUrl && (
                   <Field>
                     <FieldLabel>Image</FieldLabel>
-                    {/* eslint-disable-next-line @next/next/no-img-element -- presigned S3 URL */}
-                    <img
-                      src={existingItem.thumbUrl}
-                      alt={existingItem.name}
-                      className="h-24 rounded border object-cover"
-                    />
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- presigned S3 URL */}
+                      <img
+                        src={existingItem.thumbUrl}
+                        alt={existingItem.name}
+                        className={cn(
+                          "h-24 rounded border object-cover",
+                          removeExisting && "opacity-40"
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setRemoveExisting((v) => !v)}
+                      >
+                        {removeExisting ? "Undo" : "Remove image"}
+                      </Button>
+                    </div>
+                    {removeExisting && (
+                      <p className="text-sm text-muted-foreground">
+                        The image will be removed when you save.
+                      </p>
+                    )}
                   </Field>
                 )}
 

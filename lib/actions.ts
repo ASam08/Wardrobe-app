@@ -242,6 +242,32 @@ export async function deleteItem(itemId: string) {
   }
 }
 
+export async function deleteItemImage(imageId: string) {
+  const userId = await retrieveUserId()
+  const id = z.string().uuid().parse(imageId)
+
+  const [removed] = await sqlConn
+    .delete(schema.itemImages)
+    .where(
+      and(eq(schema.itemImages.id, id), eq(schema.itemImages.userId, userId))
+    )
+    .returning({
+      storageKey: schema.itemImages.storageKey,
+      thumbKey: schema.itemImages.thumbKey,
+    })
+  if (!removed) throw new Error("Image not found")
+
+  const results = await Promise.allSettled([
+    deleteObject(removed.storageKey),
+    deleteObject(removed.thumbKey),
+  ])
+  for (const result of results) {
+    if (result.status === "rejected") {
+      console.error("Failed to delete object for removed image:", result.reason)
+    }
+  }
+}
+
 export async function updateItem(itemId: string, input: ItemFormValues) {
   const userId = await retrieveUserId()
   const data = itemFormSchema.parse(input)

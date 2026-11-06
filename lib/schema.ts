@@ -39,6 +39,7 @@ export const imageRequestSchema = z.object({
   contentType: z.enum(IMAGE_TYPE_LIST),
   fullSize: z.number().int().positive().max(MAX_FULL_BYTES),
   thumbSize: z.number().int().positive().max(MAX_THUMB_BYTES),
+  replaceImageId: z.string().uuid().optional(),
 })
 
 export type ImageRequestValues = z.infer<typeof imageRequestSchema>

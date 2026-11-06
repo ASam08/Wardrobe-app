@@ -134,12 +134,24 @@ export async function requestImageUpload(input: ImageRequestValues) {
   const data = imageRequestSchema.parse(input)
   await assertOwnsItem(userId, data.itemId)
 
-  const existing = await sqlConn.$count(
-    schema.itemImages,
-    eq(schema.itemImages.itemId, data.itemId)
-  )
-  if (existing >= MAX_IMAGES_PER_ITEM) {
-    throw new Error("This item already has the maximum number of images")
+  if (data.replaceImageId) {
+    const target = await sqlConn.query.itemImages.findFirst({
+      where: and(
+        eq(schema.itemImages.id, data.replaceImageId),
+        eq(schema.itemImages.itemId, data.itemId),
+        eq(schema.itemImages.userId, userId)
+      ),
+      columns: { id: true },
+    })
+    if (!target) throw new Error("Image to replace not found")
+  } else {
+    const existing = await sqlConn.$count(
+      schema.itemImages,
+      eq(schema.itemImages.itemId, data.itemId)
+    )
+    if (existing >= MAX_IMAGES_PER_ITEM) {
+      throw new Error("This item already has the maximum number of images")
+    }
   }
 
   const imageId = crypto.randomUUID()
@@ -180,31 +192,72 @@ export async function confirmImageUpload(input: ImageConfirmValues) {
     throw new Error("Upload did not complete correctly")
   }
 
-  const existing = await sqlConn
-    .select({ position: schema.itemImages.position })
-    .from(schema.itemImages)
-    .where(eq(schema.itemImages.itemId, data.itemId))
-  if (existing.length >= MAX_IMAGES_PER_ITEM) {
-    await cleanup()
-    throw new Error("This item already has the maximum number of images")
-  }
-  const position = existing.length
-    ? Math.max(...existing.map((e) => e.position)) + 1
-    : 0
+  const result = await sqlConn.transaction(async (tx) => {
+    let position: number
+    let oldKeys: string[] = []
 
-  const [row] = await sqlConn
-    .insert(schema.itemImages)
-    .values({
-      itemId: data.itemId,
-      userId,
-      storageKey: fullKey,
-      thumbKey,
-      contentType: data.contentType,
-      sizeBytes: fullSize,
-      position,
-    })
-    .returning({ id: schema.itemImages.id })
-  return row
+    if (data.replaceImageId) {
+      const [old] = await tx
+        .delete(schema.itemImages)
+        .where(
+          and(
+            eq(schema.itemImages.id, data.replaceImageId),
+            eq(schema.itemImages.itemId, data.itemId),
+            eq(schema.itemImages.userId, userId)
+          )
+        )
+        .returning({
+          position: schema.itemImages.position,
+          storageKey: schema.itemImages.storageKey,
+          thumbKey: schema.itemImages.thumbKey,
+        })
+      if (!old) return { error: "Image to replace not found" } as const
+      position = old.position
+      oldKeys = [old.storageKey, old.thumbKey]
+    } else {
+      const existing = await tx
+        .select({ position: schema.itemImages.position })
+        .from(schema.itemImages)
+        .where(eq(schema.itemImages.itemId, data.itemId))
+      if (existing.length >= MAX_IMAGES_PER_ITEM) {
+        return {
+          error: "This item already has the maximum number of images",
+        } as const
+      }
+      position = existing.length
+        ? Math.max(...existing.map((e) => e.position)) + 1
+        : 0
+    }
+
+    const [row] = await tx
+      .insert(schema.itemImages)
+      .values({
+        itemId: data.itemId,
+        userId,
+        storageKey: fullKey,
+        thumbKey,
+        contentType: data.contentType,
+        sizeBytes: fullSize,
+        position,
+      })
+      .returning({ id: schema.itemImages.id })
+    return { row, oldKeys } as const
+  })
+
+  if ("error" in result) {
+    await cleanup()
+    throw new Error(result.error)
+  }
+
+  const results = await Promise.allSettled(
+    result.oldKeys.map((key) => deleteObject(key))
+  )
+  for (const r of results) {
+    if (r.status === "rejected") {
+      console.error("Failed to delete object for replaced image:", r.reason)
+    }
+  }
+  return result.row
 }
 
 export async function deleteItem(itemId: string) {

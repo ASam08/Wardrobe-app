@@ -67,7 +67,8 @@ export async function prepareImage(file: File): Promise<PreparedImage> {
 
 export async function uploadPreparedImage(
   itemId: string,
-  prepared: PreparedImage
+  prepared: PreparedImage,
+  replaceImageId?: string
 ) {
   const { contentType, full, thumb } = prepared
   const input = {
@@ -75,6 +76,7 @@ export async function uploadPreparedImage(
     contentType,
     fullSize: full.size,
     thumbSize: thumb.size,
+    replaceImageId,
   }
 
   const { imageId, fullUrl, thumbUrl } = await requestImageUpload(input)

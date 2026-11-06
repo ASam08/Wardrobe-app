@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select"
 import { CategoryField } from "@/components/category-field"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { capitalise } from "@/lib/utils"
+import { capitalise, cn } from "@/lib/utils"
 import { seasonEnum } from "@/db/schema"
 import { createItem, updateItem, deleteItemImage } from "@/lib/actions"
 import { useRouter } from "next/navigation"
@@ -33,7 +33,6 @@ import {
   uploadPreparedImage,
 } from "@/lib/client-actions"
 import { WardrobeItem } from "@/lib/definitions"
-import { cn } from "@/lib/utils"
 
 type PickedImage = { prepared: PreparedImage; previewUrl: string }
 type SavedItem = { id: string; name: string }
@@ -70,7 +69,6 @@ export function ItemDialog({
     resolver: zodResolver(itemFormSchema),
     defaultValues: defaultsFor(existingItem),
   })
-
   const [image, setImage] = useState<PickedImage | null>(null)
   const [isPreparing, setIsPreparing] = useState(false)
   const [imageError, setImageError] = useState<string | null>(null)
@@ -80,6 +78,9 @@ export function ItemDialog({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<PickedImage | null>(null)
   const pickCounter = useRef(0)
+
+  const hasExistingImage = calledType === "edit" && !!existingItem.thumbUrl
+  const replacing = !!image
 
   useEffect(() => {
     return () => {
@@ -145,7 +146,11 @@ export function ItemDialog({
   async function uploadAndFinish(item: SavedItem) {
     if (image) {
       try {
-        await uploadPreparedImage(item.id, image.prepared)
+        await uploadPreparedImage(
+          item.id,
+          image.prepared,
+          existingItem?.imageId ?? undefined
+        )
       } catch {
         setSavedItem(item)
         setImageError(
@@ -176,7 +181,7 @@ export function ItemDialog({
         })
         return
       }
-      if (removeExisting && existingItem.imageId) {
+      if (removeExisting && !image && existingItem.imageId) {
         try {
           await deleteItemImage(existingItem.imageId)
         } catch {
@@ -260,7 +265,7 @@ export function ItemDialog({
                 )}
               </CardContent>
             ) : (
-              <CardContent className="space-y-4">
+              <CardContent className="max-h-[80dvh] space-y-4 overflow-y-auto">
                 <Controller
                   name="name"
                   control={form.control}
@@ -345,39 +350,46 @@ export function ItemDialog({
                     </Field>
                   )}
                 />
-                {calledType === "edit" && existingItem.thumbUrl && (
+                {hasExistingImage && (
                   <Field>
                     <FieldLabel>Image</FieldLabel>
                     <div className="flex items-center gap-3">
                       {/* eslint-disable-next-line @next/next/no-img-element -- presigned S3 URL */}
                       <img
-                        src={existingItem.thumbUrl}
-                        alt={existingItem.name}
+                        src={existingItem!.thumbUrl!}
+                        alt={existingItem!.name}
                         className={cn(
                           "h-24 rounded border object-cover",
-                          removeExisting && "opacity-40"
+                          (removeExisting || replacing) && "opacity-40"
                         )}
                       />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setRemoveExisting((v) => !v)}
-                      >
-                        {removeExisting ? "Undo" : "Remove image"}
-                      </Button>
+                      {!replacing && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setRemoveExisting((v) => !v)}
+                        >
+                          {removeExisting ? "Undo" : "Remove image"}
+                        </Button>
+                      )}
                     </div>
                     {removeExisting && (
                       <p className="text-sm text-muted-foreground">
                         The image will be removed when you save.
                       </p>
                     )}
+                    {replacing && (
+                      <p className="text-sm text-muted-foreground">
+                        This image will be replaced when you save.
+                      </p>
+                    )}
                   </Field>
                 )}
 
-                {(calledType === "create" || !existingItem.thumbUrl) && (
+                {(calledType === "create" || !removeExisting) && (
                   <Field data-invalid={!!imageError}>
                     <FieldLabel htmlFor="item-image">
-                      Image (optional)
+                      {hasExistingImage ? "Replace image" : "Image (optional)"}
                     </FieldLabel>
                     <Input
                       ref={fileInputRef}
@@ -405,7 +417,7 @@ export function ItemDialog({
                           variant="outline"
                           onClick={clearImage}
                         >
-                          Remove
+                          {hasExistingImage ? "Keep current image" : "Remove"}
                         </Button>
                       </div>
                     )}

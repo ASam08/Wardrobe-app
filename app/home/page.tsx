@@ -5,6 +5,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { WardrobeItem } from "@/lib/definitions"
 import WardrobeGrid from "@/components/wardrobe-grid"
+import { FilterDialog } from "@/components/filter-dialog"
 
 export default async function HomePage() {
   const session = await auth.api.getSession({
@@ -19,14 +20,11 @@ export default async function HomePage() {
 
   return (
     <div>
-      <h1>Welcome to the Home Page</h1>
-      {session ? (
-        <p>You are logged in as {session.user.name}</p>
-      ) : (
-        <p>You are not logged in.</p>
-      )}
-
-      <ItemDialog categories={categories} calledType="create" />
+      <h2 className="mb-4 text-2xl font-semibold">Your Wardrobe</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <ItemDialog categories={categories} calledType="create" />
+        <FilterDialog categories={categories} />
+      </div>
 
       <WardrobeGrid items={retrievedItems} categories={categories} />
     </div>

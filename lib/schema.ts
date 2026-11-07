@@ -49,3 +49,11 @@ export const imageConfirmSchema = imageRequestSchema.extend({
 })
 
 export type ImageConfirmValues = z.infer<typeof imageConfirmSchema>
+
+export const filterFormSchema = z.object({
+  colours: z.array(z.enum(COLOUR_NAMES)).optional(),
+  seasons: z.array(z.enum(seasonEnum.enumValues)).optional(),
+  categoryIds: z.array(z.string()).optional(),
+})
+
+export type FilterFormValues = z.infer<typeof filterFormSchema>

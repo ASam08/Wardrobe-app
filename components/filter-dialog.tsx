@@ -23,6 +23,8 @@ import { COLOURS } from "@/lib/constants"
 import { seasonEnum } from "@/db/schema"
 import { filterFormSchema, type FilterFormValues } from "@/lib/schema"
 import { capitalise } from "@/lib/utils"
+import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 
 export function FilterDialog({
   categories,
@@ -31,16 +33,28 @@ export function FilterDialog({
 }) {
   const form = useForm<FilterFormValues>({
     resolver: zodResolver(filterFormSchema),
-
     defaultValues: {
       colours: [],
       seasons: [],
-      categoryIds: [],
+      categoryIds: useSearchParams().getAll("categoryIds") || [],
     },
   })
+  const [open, setOpen] = useState(false)
 
   function onSubmit(data: FilterFormValues) {
-    console.log("Filter form submitted:", data)
+    const params = new URLSearchParams()
+    if (data.colours?.length) params.set("colours", data.colours.join(","))
+    if (data.seasons?.length) params.set("seasons", data.seasons.join(","))
+    if (data.categoryIds?.length)
+      params.set("categoryIds", data.categoryIds.join(","))
+
+    const qs = params.toString()
+    window.history.replaceState(
+      null,
+      "",
+      qs ? `?${qs}` : window.location.pathname
+    )
+    setOpen(false)
   }
 
   const categoryOptions = categories.map((category) => ({
@@ -59,10 +73,10 @@ export function FilterDialog({
     hex,
   }))
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button>
+          <Button variant="outline">
             Filter <Filter className="ml-2 h-4 w-4" />
           </Button>
         }

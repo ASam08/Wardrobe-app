@@ -23,21 +23,28 @@ import { COLOURS } from "@/lib/constants"
 import { seasonEnum } from "@/db/schema"
 import { filterFormSchema, type FilterFormValues } from "@/lib/schema"
 import { capitalise } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
+import { filtersFromSearchParams } from "@/lib/filter-functions"
 
 export function FilterDialog({
   categories,
 }: {
   categories: { id: string; name: string }[]
 }) {
+  const searchParams = useSearchParams()
+  const validCategoryIds = useMemo(
+    () => new Set(categories.map((c) => c.id)),
+    [categories]
+  )
+  const current = useMemo(
+    () => filtersFromSearchParams(searchParams, validCategoryIds),
+    [searchParams, validCategoryIds]
+  )
+
   const form = useForm<FilterFormValues>({
     resolver: zodResolver(filterFormSchema),
-    defaultValues: {
-      colours: [],
-      seasons: [],
-      categoryIds: useSearchParams().getAll("categoryIds") || [],
-    },
+    defaultValues: current,
   })
   const [open, setOpen] = useState(false)
 
@@ -73,7 +80,13 @@ export function FilterDialog({
     hex,
   }))
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (next) form.reset(current)
+        setOpen(next)
+      }}
+    >
       <DialogTrigger
         render={
           <Button variant="outline">
@@ -179,7 +192,9 @@ export function FilterDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => form.reset()}
+              onClick={() =>
+                form.reset({ colours: [], seasons: [], categoryIds: [] })
+              }
             >
               Reset
             </Button>

@@ -11,26 +11,9 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import ClothingOpenCard from "@/components/clothing-open-card"
-import { filtersFromSearchParams, applyFilters } from "@/lib/filter-functions"
+import { applyFilters } from "@/lib/filter-functions"
 import { useMemo } from "react"
-import { useSearchParams } from "next/navigation"
-
-function useItemFilters(categories: { id: string }[]) {
-  const searchParams = useSearchParams()
-  const validCategoryIds = useMemo(
-    () => new Set(categories.map((c) => c.id)),
-    [categories]
-  )
-  const filters = useMemo(
-    () => filtersFromSearchParams(searchParams, validCategoryIds),
-    [searchParams, validCategoryIds]
-  )
-  const activeCount =
-    (filters.categoryIds?.length ?? 0) +
-    (filters.seasons?.length ?? 0) +
-    (filters.colours?.length ?? 0)
-  return { filters, activeCount }
-}
+import { useItemFilters } from "@/hooks/use-item-filters"
 
 export default function WardrobeGrid({
   items,
@@ -41,7 +24,7 @@ export default function WardrobeGrid({
 }) {
   const [openItem, setOpenItem] = useState<string | null>(null)
   const [openCard, setOpenCard] = useState(false)
-  const { filters, activeCount } = useItemFilters(categories)
+  const { filters, activeCount, clearFilters } = useItemFilters(categories)
   const filtered = useMemo(() => applyFilters(items, filters), [items, filters])
   const selected = items.find((i) => i.id === openItem)
 
@@ -61,12 +44,7 @@ export default function WardrobeGrid({
         <div className="col-span-full flex flex-col items-center gap-3 py-12 text-muted-foreground">
           <p>No items match these filters.</p>
           {activeCount > 0 && (
-            <Button
-              variant="outline"
-              onClick={() =>
-                window.history.replaceState(null, "", window.location.pathname)
-              }
-            >
+            <Button variant="outline" onClick={clearFilters}>
               Clear filters
             </Button>
           )}

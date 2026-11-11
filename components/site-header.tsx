@@ -23,7 +23,7 @@ export function SiteHeader({ user }: { user: User }) {
 
           <Button
             variant="ghost"
-            render={<Link href="/account" />}
+            render={<Link href="/home/account" />}
             nativeButton={false}
             className="hidden items-center space-x-2 md:flex"
           >
@@ -36,7 +36,7 @@ export function SiteHeader({ user }: { user: User }) {
           <Button
             variant="ghost"
             size="icon"
-            render={<Link href="/account" />}
+            render={<Link href="/home/account" />}
             nativeButton={false}
             className="h-9 w-9 md:hidden"
           >

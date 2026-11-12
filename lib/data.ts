@@ -6,6 +6,20 @@ import { eq, or, isNull, asc } from "drizzle-orm"
 import { createDownloadUrl } from "@/lib/s3"
 import { retrieveUserId } from "@/lib/actions"
 import { WardrobeItem } from "@/lib/definitions"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
+
+export async function verifyUserPassword(password: string) {
+  try {
+    await auth.api.verifyPassword({
+      body: { password },
+      headers: await headers(),
+    })
+    return true
+  } catch {
+    return false
+  }
+}
 
 export async function retrieveCategories() {
   const userId = await retrieveUserId()

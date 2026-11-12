@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-// import AccountForm from "@/app/ui/account/accountform";
+import AccountForm from "@/components/account-form"
 
 export default async function AccountPage() {
   const session = await auth.api.getSession({
@@ -18,15 +18,7 @@ export default async function AccountPage() {
       <h1 className="flex flex-wrap text-2xl font-bold text-gray-800 md:mb-4 dark:text-gray-200">
         Account
       </h1>
-      <p className="text-gray-700 dark:text-gray-300">
-        Welcome, {session.user.name}! This is your account page.
-      </p>
-      <p className="text-gray-700 dark:text-gray-300">
-        Your email: {session.user.email}
-      </p>
-      <p className="text-gray-700 dark:text-gray-300">
-        Your user ID: {session.user.id}
-      </p>
+      <AccountForm user={session.user} />
     </div>
   )
 }

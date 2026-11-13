@@ -57,3 +57,31 @@ export const filterFormSchema = z.object({
 })
 
 export type FilterFormValues = z.infer<typeof filterFormSchema>
+
+export const personalFormSchema = z.object({
+  name: z.string().trim().min(1, "Name cannot be empty"),
+})
+export type PersonalFormValues = z.infer<typeof personalFormSchema>
+
+export const emailFormSchema = z.object({
+  email: z.string().email("Invalid email address"),
+})
+export type EmailFormValues = z.infer<typeof emailFormSchema>
+
+export const verifyPasswordSchema = z.object({
+  password: z.string().min(1, "Enter your password"),
+})
+export type VerifyPasswordValues = z.infer<typeof verifyPasswordSchema>
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Enter your current password"),
+    newPassword: passwordSchema,
+    confirmPassword: z.string(),
+    revokeSessions: z.boolean(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+export type ChangePasswordValues = z.infer<typeof changePasswordSchema>

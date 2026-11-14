@@ -21,3 +21,5 @@ export type WardrobeItem = {
   fullUrl: string | null
   imageId: string | null
 }
+
+export type SortDirection = "asc" | "desc"

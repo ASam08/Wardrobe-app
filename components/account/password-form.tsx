@@ -22,7 +22,6 @@ const emptyValues: ChangePasswordValues = {
   revokeSessions: true,
 }
 
-// with criteriaMode "all" a field can fail several rules at once; collect them all
 function messagesOf(error?: RHFFieldError) {
   if (!error) return []
   const all = error.types ? Object.values(error.types).flat() : [error.message]

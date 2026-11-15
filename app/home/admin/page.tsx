@@ -19,9 +19,9 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { getPaginationItems } from "@/lib/utils"
-// import AdminActions from "@/components/ui/dashboard/admin/adminactions";
+import AdminActions from "@/components/admin/admin-actions"
 import SortableHeader from "@/components/sortable-header"
-// import SearchFilters from "@/components/ui/dashboard/admin/searchfilters";
+import TableFilters from "@/components/table-filters"
 
 export default async function AdminDashboard({
   searchParams,
@@ -129,34 +129,34 @@ export default async function AdminDashboard({
       </h1>
       <div>
         <div className="mb-4 flex flex-col gap-4 whitespace-nowrap md:flex-row md:flex-wrap">
-          {/* <SearchFilters
+          <TableFilters
             label="Admins Only"
             field="role"
             value="admin"
             operator="eq"
             currentFilter={currentFilter}
           />
-          <SearchFilters
+          <TableFilters
             label="Users Only"
             field="role"
             value="user"
             operator="eq"
             currentFilter={currentFilter}
           />
-          <SearchFilters
+          <TableFilters
             label="Banned"
             field="banned"
             value="true"
             operator="eq"
             currentFilter={currentFilter}
           />
-          <SearchFilters
+          <TableFilters
             label="New Users (Last 7 days)"
             field="createdAt"
             value={sevenDaysAgoString}
             operator="gte"
             currentFilter={currentFilter}
-          /> */}
+          />
         </div>
         <div className="overflow-auto rounded-xl border border-stone-300 dark:border-gray-700">
           <Table>
@@ -238,7 +238,7 @@ export default async function AdminDashboard({
                     {new Date(user.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="px-4 py-3">
-                    {/* <AdminActions {...user} currentUserId={currentUserId} /> */}
+                    <AdminActions {...user} currentUserId={currentUserId} />
                   </TableCell>
                 </TableRow>
               ))}

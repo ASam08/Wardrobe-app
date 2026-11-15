@@ -22,3 +22,11 @@ export const COLOUR_NAMES = Object.keys(COLOURS) as [
 ]
 
 export const NEW_CATEGORY = "NEW_CATEGORY"
+
+export const defaultBanReasons: string[] = [
+  "Account Not Yet Verified",
+  "Spamming",
+  "T&C Violation",
+  "Inappropriate Content",
+  "Fraudulent Activity",
+]

@@ -23,3 +23,5 @@ export type WardrobeItem = {
 }
 
 export type SortDirection = "asc" | "desc"
+
+export type UserRole = "user" | "admin"

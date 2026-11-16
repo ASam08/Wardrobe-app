@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldLabel } from "@/components/ui/field"
+import { useId } from "react"
 
 interface FilterProps {
   label: string
@@ -21,6 +22,7 @@ export default function TableFilters({
 }: FilterProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const id = useId()
 
   const filterString = [field, value, operator].join("--")
   const isActive = currentFilter === filterString
@@ -43,9 +45,11 @@ export default function TableFilters({
   }
 
   return (
-    <Field orientation="horizontal" className="w-fit">
-      <Checkbox onCheckedChange={handleClick} checked={isActive} />
-      <FieldLabel>{label}</FieldLabel>
+    <Field orientation="horizontal" className="w-fit cursor-pointer">
+      <Checkbox id={id} onCheckedChange={handleClick} checked={isActive} />
+      <FieldLabel htmlFor={id} className="cursor-pointer">
+        {label}
+      </FieldLabel>
     </Field>
   )
 }

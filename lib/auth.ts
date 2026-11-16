@@ -42,6 +42,19 @@ export const auth = betterAuth({
           }
         },
       },
+      delete: {
+        after: async (user) => {
+          try {
+            const { deleteUserFiles } = await import("@/lib/s3")
+            await deleteUserFiles(user.id)
+          } catch (error) {
+            console.error(
+              `Failed to delete files for removed user ${user.id}:`,
+              error
+            )
+          }
+        },
+      },
     },
   },
 

@@ -5,6 +5,7 @@ import {
   PutObjectCommand,
   HeadObjectCommand,
   DeleteObjectCommand,
+  ListObjectsV2Command,
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { env, makeS3Client } from "@/lib/s3-client"
@@ -68,4 +69,33 @@ export async function objectSize(key: string): Promise<number | null> {
 
 export async function deleteObject(key: string) {
   await internal().send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }))
+}
+
+/** Deletes every file stored for a user. Throws after finishing if any delete failed. */
+export async function deleteUserFiles(userId: string) {
+  // refuse anything that could widen the prefix beyond one user's folder
+  if (!userId || userId.includes("/")) throw new Error("Invalid user id")
+  const prefix = `users/${userId}/`
+
+  let failed = 0
+  let token: string | undefined
+  do {
+    const page = await internal().send(
+      new ListObjectsV2Command({
+        Bucket: bucket(),
+        Prefix: prefix,
+        ContinuationToken: token,
+      })
+    )
+    const keys = (page.Contents ?? []).flatMap((o) => (o.Key ? [o.Key] : []))
+    const results = await Promise.allSettled(
+      keys.map((key) => deleteObject(key))
+    )
+    failed += results.filter((r) => r.status === "rejected").length
+    token = page.NextContinuationToken
+  } while (token)
+
+  if (failed > 0) {
+    throw new Error(`${failed} file(s) could not be deleted for user ${userId}`)
+  }
 }

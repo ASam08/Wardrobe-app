@@ -57,7 +57,7 @@ export default async function AdminDashboard({
     filterValue,
     filterOperator,
   } = await searchParams
-  const currentPage = Number(page) || 1
+  const currentPage = Math.max(1, Number(page) || 1)
   const pageSize = 10
 
   const validSortFields = ["name", "email", "createdAt", "role"] as const
@@ -122,6 +122,17 @@ export default async function AdminDashboard({
     day: "2-digit",
   })
 
+  const pageHref = (p: number) => {
+    const params = new URLSearchParams()
+    if (sortBy) params.set("sortBy", sortBy)
+    if (sortDirection) params.set("sortDirection", sortDirection)
+    if (filterField) params.set("filterField", filterField)
+    if (filterValue) params.set("filterValue", filterValue)
+    if (filterOperator) params.set("filterOperator", filterOperator)
+    params.set("page", String(p))
+    return "?" + params.toString()
+  }
+
   return (
     <div className="flex h-full max-w-screen flex-col px-3 md:px-2">
       <h1 className="mb-4 flex flex-wrap text-xl font-bold text-gray-800 md:text-2xl dark:text-gray-200">
@@ -162,7 +173,16 @@ export default async function AdminDashboard({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="sticky left-0 z-10 bg-stone-50 px-4 py-3 dark:bg-gray-950">
+                <TableHead
+                  className="sticky left-0 z-10 bg-stone-50 px-4 py-3 dark:bg-gray-950"
+                  aria-sort={
+                    resolvedSortBy === "name"
+                      ? resolvedSortDirection === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
+                >
                   <SortableHeader
                     field="name"
                     label="Name"
@@ -170,7 +190,16 @@ export default async function AdminDashboard({
                     currentSortDirection={resolvedSortDirection}
                   />
                 </TableHead>
-                <TableHead className="px-4 py-3">
+                <TableHead
+                  className="px-4 py-3"
+                  aria-sort={
+                    resolvedSortBy === "email"
+                      ? resolvedSortDirection === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
+                >
                   <SortableHeader
                     field="email"
                     label="Email"
@@ -178,7 +207,16 @@ export default async function AdminDashboard({
                     currentSortDirection={resolvedSortDirection}
                   />
                 </TableHead>
-                <TableHead className="px-4 py-3">
+                <TableHead
+                  className="px-4 py-3"
+                  aria-sort={
+                    resolvedSortBy === "role"
+                      ? resolvedSortDirection === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
+                >
                   <SortableHeader
                     field="role"
                     label="Role"
@@ -188,7 +226,16 @@ export default async function AdminDashboard({
                 </TableHead>
                 <TableHead className="px-4 py-3">Status</TableHead>
                 <TableHead className="px-4 py-3">Status Reason</TableHead>
-                <TableHead className="px-4 py-3">
+                <TableHead
+                  className="px-4 py-3"
+                  aria-sort={
+                    resolvedSortBy === "createdAt"
+                      ? resolvedSortDirection === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
+                >
                   <SortableHeader
                     field="createdAt"
                     label="Created"
@@ -257,7 +304,7 @@ export default async function AdminDashboard({
               <PaginationContent>
                 {currentPage > 1 && (
                   <PaginationItem>
-                    <PaginationPrevious href={"?page=" + (currentPage - 1)} />
+                    <PaginationPrevious href={pageHref(currentPage - 1)} />
                   </PaginationItem>
                 )}
 
@@ -269,7 +316,7 @@ export default async function AdminDashboard({
                   ) : (
                     <PaginationItem key={item}>
                       <PaginationLink
-                        href={"?page=" + item}
+                        href={pageHref(item)}
                         isActive={item === currentPage}
                       >
                         {item}
@@ -280,7 +327,7 @@ export default async function AdminDashboard({
 
                 {currentPage < totalPages && (
                   <PaginationItem>
-                    <PaginationNext href={"?page=" + (currentPage + 1)} />
+                    <PaginationNext href={pageHref(currentPage + 1)} />
                   </PaginationItem>
                 )}
               </PaginationContent>

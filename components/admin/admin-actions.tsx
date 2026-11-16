@@ -181,12 +181,12 @@ export default function AdminActions({
                 <DropdownMenuLabel className="text-red-600">
                   Danger Zone
                 </DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => setRoleDialogOpen(true)}>
+                <DropdownMenuItem onClick={() => setRoleDialogOpen(true)}>
                   {user.role === "admin" ? "Set as User" : "Set as Admin"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
-                  onSelect={() => setRemoveUserDialogOpen(true)}
+                  onClick={() => setRemoveUserDialogOpen(true)}
                 >
                   Delete
                 </DropdownMenuItem>

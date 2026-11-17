@@ -85,3 +85,10 @@ export const changePasswordSchema = z
     path: ["confirmPassword"],
   })
 export type ChangePasswordValues = z.infer<typeof changePasswordSchema>
+
+export const editUserSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }).trim(),
+  email: z.string().email({ message: "Invalid email address" }).trim(),
+})
+
+export type EditUserValues = z.infer<typeof EditUserSchema>

@@ -30,6 +30,7 @@ import { User } from "@/lib/auth"
 import { defaultBanReasons } from "@/lib/constants"
 import { UserRole } from "@/lib/definitions"
 import { useState } from "react"
+import { EditUserDialog } from "@/components/admin/edit-user"
 
 type AdminActionsProps = User & {
   currentUserId: string
@@ -45,6 +46,7 @@ export default function AdminActions({
   const router = useRouter()
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
   const [removeUserDialogOpen, setRemoveUserDialogOpen] = useState(false)
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false)
 
   const isSelf = user.id === user.currentUserId
 
@@ -133,6 +135,12 @@ export default function AdminActions({
         </AlertDialogContent>
       </AlertDialog>
 
+      <EditUserDialog
+        chosenUser={user}
+        open={editUserDialogOpen}
+        onOpenChange={setEditUserDialogOpen}
+      />
+
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -145,11 +153,9 @@ export default function AdminActions({
           }
         />
         <DropdownMenuContent className="w-36" align="end">
-          {hideEdit !== true && (
-            <DropdownMenuItem onClick={() => editUser(user.id)}>
-              Edit
-            </DropdownMenuItem>
-          )}
+          <DropdownMenuItem onClick={() => setEditUserDialogOpen(true)}>
+            Edit
+          </DropdownMenuItem>
           {hideEdit !== true && !isSelf && <DropdownMenuSeparator />}
           {!isSelf && (
             <>

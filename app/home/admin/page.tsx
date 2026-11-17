@@ -111,17 +111,6 @@ export default async function AdminDashboard({
     headers: await headers(),
   })
 
-  const totalUsers = users.total
-  const totalPages = Math.ceil(totalUsers / pageSize)
-
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const sevenDaysAgoString = sevenDaysAgo.toLocaleDateString("en-NZ", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  })
-
   const pageHref = (p: number) => {
     const params = new URLSearchParams()
     if (sortBy) params.set("sortBy", sortBy)
@@ -132,6 +121,21 @@ export default async function AdminDashboard({
     params.set("page", String(p))
     return "?" + params.toString()
   }
+
+  const totalUsers = users.total
+  const totalPages = Math.ceil(totalUsers / pageSize)
+
+  if (currentPage > totalPages) {
+    redirect("/home/admin" + pageHref(totalPages))
+  }
+
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const sevenDaysAgoString = sevenDaysAgo.toLocaleDateString("en-NZ", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  })
 
   return (
     <div className="flex h-full max-w-screen flex-col px-3 md:px-2">

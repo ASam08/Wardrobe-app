@@ -34,6 +34,7 @@ export default function SortableHeader({
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       className="flex items-center gap-1 font-medium hover:text-foreground"
     >

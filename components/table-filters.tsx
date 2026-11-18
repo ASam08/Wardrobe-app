@@ -33,15 +33,13 @@ export default function TableFilters({
       params.delete("filterField")
       params.delete("filterValue")
       params.delete("filterOperator")
-      params.set("page", "1")
-      router.push("?" + params.toString())
     } else {
       params.set("filterField", field)
       params.set("filterValue", value)
       params.set("filterOperator", operator)
-      params.set("page", "1")
-      router.push("?" + params.toString())
     }
+    params.set("page", "1")
+    router.push("?" + params.toString())
   }
 
   return (

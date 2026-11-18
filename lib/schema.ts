@@ -91,4 +91,4 @@ export const editUserSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }).trim(),
 })
 
-export type EditUserValues = z.infer<typeof EditUserSchema>
+export type EditUserValues = z.infer<typeof editUserSchema>

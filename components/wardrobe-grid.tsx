@@ -2,17 +2,11 @@
 
 import { WardrobeItem } from "@/lib/definitions"
 import ClothingGridCard from "@/components/clothing-grid-card"
-import { useState } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { useState, useMemo } from "react"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import ClothingOpenCard from "@/components/clothing-open-card"
 import { applyFilters } from "@/lib/filter-functions"
-import { useMemo } from "react"
 import { useItemFilters } from "@/hooks/use-item-filters"
 
 export default function WardrobeGrid({

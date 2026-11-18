@@ -15,6 +15,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
 import { editUserSchema, type EditUserValues } from "@/lib/schema"
+import { runAuthAction } from "@/components/account/run-auth-action"
 
 export function EditUserDialog({
   chosenUser,
@@ -40,8 +41,8 @@ export function EditUserDialog({
   }
 
   async function onSubmit(data: EditUserValues) {
-    try {
-      if (data.email !== chosenUser.email.toLowerCase()) {
+    if (data.email !== chosenUser.email.toLowerCase()) {
+      try {
         const { data: found } = await authClient.admin.listUsers({
           query: {
             filterField: "email",
@@ -56,24 +57,24 @@ export function EditUserDialog({
           })
           return
         }
-      }
-
-      const { error } = await authClient.admin.updateUser({
-        userId: chosenUser.id,
-        data: { name: data.name, email: data.email },
-      })
-      if (error) {
+      } catch {
         form.setError("root", {
-          message: error.message ?? "Couldn't save changes. Please try again.",
+          message: "Couldn't check that email. Please try again.",
         })
         return
       }
-    } catch {
-      form.setError("root", {
-        message: "Couldn't save changes. Please try again.",
-      })
-      return
     }
+
+    const ok = await runAuthAction(
+      () =>
+        authClient.admin.updateUser({
+          userId: chosenUser.id,
+          data: { name: data.name, email: data.email },
+        }),
+      "User updated",
+      "Couldn't save changes"
+    )
+    if (!ok) return
 
     onOpenChange(false)
     router.refresh()

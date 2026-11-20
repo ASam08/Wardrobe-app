@@ -1,11 +1,12 @@
 import Link from "next/link"
-import { UserCircle } from "lucide-react"
+import { UserCircle, UserCog } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { SignOutButton } from "@/components/sign-out-button"
 import type { User } from "@/lib/auth"
 
 export function SiteHeader({ user }: { user: User }) {
+  const isAdmin = user.role == "admin"
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="@container flex h-14 items-center justify-between px-4">
@@ -20,6 +21,29 @@ export function SiteHeader({ user }: { user: User }) {
 
         <nav className="flex items-center space-x-2">
           <ModeToggle />
+          {isAdmin && (
+            <>
+              <Button
+                variant="default"
+                render={<Link href="/home/admin" />}
+                nativeButton={false}
+                className="hidden items-center space-x-2 md:flex"
+              >
+                <UserCog className="h-[1.2rem] w-[1.2rem]" />
+                <span className="max-w-50 truncate text-sm">Admin</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                render={<Link href="/home/admin" />}
+                nativeButton={false}
+                className="h-9 w-9 md:hidden"
+              >
+                <UserCog className="h-[1.2rem] w-[1.2rem]" />
+              </Button>
+            </>
+          )}
 
           <Button
             variant="ghost"

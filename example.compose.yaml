@@ -1,0 +1,115 @@
+name: wardrobe
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  garage:
+    image: dxflrs/garage:v2.5.0
+    restart: unless-stopped
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?set GARAGE_RPC_SECRET in .env}
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?set GARAGE_ADMIN_TOKEN in .env}
+      GARAGE_DEFAULT_ACCESS_KEY: ${S3_ACCESS_KEY:?set S3_ACCESS_KEY in .env}
+      GARAGE_DEFAULT_SECRET_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY in .env}
+      GARAGE_DEFAULT_BUCKET: ${S3_BUCKET_NAME:?set S3_BUCKET_NAME in .env}
+    configs:
+      - source: garage_toml
+        target: /etc/garage.toml
+    volumes:
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:3900:3900"
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    image: ghcr.io/asam08/wardrobe-app:${APP_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      garage:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+      S3_ENDPOINT: http://garage:3900
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:?set S3_PUBLIC_ENDPOINT in .env}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      # Must match s3_region in the Garage config below
+      S3_REGION: garage
+      S3_CORS_ORIGINS: ${S3_CORS_ORIGINS:?set S3_CORS_ORIGINS in .env}
+
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL in .env}
+
+      # Optional. Defaults mirror the app's own defaults.
+      # an empty sweeper setting can be read as 0.
+      APPROVE_SIGNUPS: ${APPROVE_SIGNUPS:-false}
+      BETTER_AUTH_TRUSTED_ORIGINS: ${BETTER_AUTH_TRUSTED_ORIGINS:-}
+      ORPHAN_SWEEP_INTERVAL_HOURS: ${ORPHAN_SWEEP_INTERVAL_HOURS:-24}
+      ORPHAN_SWEEP_GRACE_MINUTES: ${ORPHAN_SWEEP_GRACE_MINUTES:-60}
+      ORPHAN_SWEEP_TIMEOUT_MINUTES: ${ORPHAN_SWEEP_TIMEOUT_MINUTES:-60}
+      ORPHAN_SWEEP_DRY_RUN: ${ORPHAN_SWEEP_DRY_RUN:-false}
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:3000:3000"
+    healthcheck:
+      # busybox wget follows the redirect from / to the login page
+      test:
+        ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+configs:
+  garage_toml:
+    content: |
+      metadata_dir = "/var/lib/garage/meta"
+      data_dir = "/var/lib/garage/data"
+      db_engine = "sqlite"
+      replication_factor = 1
+
+      # Bind IPv4 explicitly: IPv6 can be disabled inside containers
+      rpc_bind_addr = "0.0.0.0:3901"
+      rpc_public_addr = "127.0.0.1:3901"
+      # rpc_secret comes from the GARAGE_RPC_SECRET environment variable
+
+      [s3_api]
+      s3_region = "garage"
+      api_bind_addr = "0.0.0.0:3900"
+      root_domain = ".s3.garage.localhost"
+
+      [admin]
+      api_bind_addr = "0.0.0.0:3903"
+      # admin_token comes from the GARAGE_ADMIN_TOKEN environment variable
+
+volumes:
+  db-data:
+  garage-meta:
+  garage-data:

@@ -5,6 +5,11 @@ import { sqlConn } from "@/lib/db"
 import * as schema from "@/db/schema"
 
 const approvalRequired = process.env.APPROVE_SIGNUPS?.toLowerCase() === "true"
+const baseURL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
+const extraTrustedOrigins = (process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 
 export const auth = betterAuth({
   database: drizzleAdapter(sqlConn, {
@@ -83,15 +88,12 @@ export const auth = betterAuth({
     database: {
       generateId: () => crypto.randomUUID(),
     },
-    useSecureCookies: process.env.BETTER_AUTH_URL?.startsWith("https") ?? false,
+    useSecureCookies: baseURL.startsWith("https"),
   },
 
-  trustedOrigins: [
-    process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-    ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",") ?? []),
-  ],
+  trustedOrigins: [baseURL, ...extraTrustedOrigins],
 
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
+  baseURL,
 })
 
 export type Session = typeof auth.$Infer.Session
